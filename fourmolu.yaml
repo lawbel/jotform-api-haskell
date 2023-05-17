@@ -1,0 +1,4 @@
+indentation: 4
+import-export-style: leading
+record-brace-space: True
+function-arrows: leading
