@@ -1,13 +1,11 @@
-module Network.JotForm
+module Network.JotForm.Core
     ( ApiClient (..)
     , BaseUrl (..)
     , OutputType (..)
     , DebugMode (..)
     , Path
     , ApiKey
-
     , userAgent
-    , defaultSecureRequest
     , defaultApiClient
     , defaultApiClient'
     , baseUrlToString
