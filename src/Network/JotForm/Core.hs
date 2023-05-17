@@ -9,10 +9,14 @@ module Network.JotForm.Core
     , defaultApiClient
     , defaultApiClient'
     , baseUrlToString
-    , fetchUrl
+    , fetch
+    , fetchJson
     , toRequest
     ) where
 
+import Control.Exception (Exception, throwIO)
+import Data.Aeson (FromJSON)
+import Data.Aeson qualified as Json
 import Data.ByteString qualified as Byte.Str
 import Data.ByteString qualified as Str (ByteString)
 import Data.ByteString.Char8 qualified as Byte.Str.Char8
@@ -21,8 +25,14 @@ import Network.HTTP.Client (Manager, Request, Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
 import Network.HTTP.Types (Method, Query)
+import Network.HTTP.Types.Header qualified as Header
 import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Utils qualified as Utils
+
+newtype JsonException = MkJsonException String
+    deriving (Eq, Ord, Show, Read)
+
+instance Exception JsonException
 
 type Path = Str.ByteString
 
@@ -84,14 +94,31 @@ baseUrlToString = \case
     DefaultBaseUrl -> Utils.ascii "api.jotform.com"
     EuBaseUrl -> Utils.ascii "eu-api.jotform.com"
 
-fetchUrl
+fetch
     :: ApiClient
     -> Path
     -> Query
     -> Method
     -> IO (Response Lazy.ByteString)
-fetchUrl client path query method =
+fetch client path query method =
     Client.httpLbs (toRequest client path query method) (httpManager client)
+
+fetchJson
+    :: FromJSON a
+    => ApiClient
+    -> Path
+    -> Query
+    -> Method
+    -> IO (Response a)
+fetchJson client path query method = do
+    response <- Client.httpLbs requestJson (httpManager client)
+    case Json.eitherDecode $ Client.responseBody response of
+        Left err -> throwIO $ MkJsonException err
+        Right json -> pure (json <$ response)
+  where
+    request = toRequest client path query method
+    requestJson = Utils.updateHeaders (acceptJson :) request
+    acceptJson = (Header.hAccept, Utils.ascii "application/json")
 
 toRequest :: ApiClient -> Path -> Query -> Method -> Request
 toRequest client path query method =
