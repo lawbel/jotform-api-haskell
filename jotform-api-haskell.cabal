@@ -27,11 +27,11 @@ library
     default-language: Haskell2010
 
 test-suite jotform-api-haskell-test
-  import: warnings
-  default-language: Haskell2010
-  type: exitcode-stdio-1.0
-  hs-source-dirs: test
-  main-is: Main.hs
-  build-depends:
-      base
-    , jotform-api-haskell
+    import: warnings
+    default-language: Haskell2010
+    type: exitcode-stdio-1.0
+    hs-source-dirs: test
+    main-is: Main.hs
+    build-depends:
+          base
+        , jotform-api-haskell
