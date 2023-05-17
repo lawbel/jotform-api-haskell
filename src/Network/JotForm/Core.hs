@@ -101,8 +101,8 @@ toRequest client path query method =
         , Client.method = method
         , Client.queryString = URI.renderQuery False query
         , Client.requestHeaders =
-            [ Utils.mkHeader "ApiKey" $ apiKey client
-            , Utils.mkHeader "User-Agent" userAgent
+            [ (Utils.headerName "ApiKey", apiKey client)
+            , (Header.hUserAgent, userAgent)
             ]
         }
   where
