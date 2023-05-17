@@ -25,6 +25,7 @@ common language-options
 library
     import: warnings, language-options
     exposed-modules: Network.JotForm.Core
+    other-modules: Network.JotForm.Utils
     build-depends:
           base ^>=4.16.4.0
         , bytestring ^>=0.11.4.0

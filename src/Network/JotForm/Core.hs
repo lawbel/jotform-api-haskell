@@ -17,12 +17,12 @@ import Data.ByteString qualified as Byte.Str
 import Data.ByteString qualified as Str (ByteString)
 import Data.ByteString.Char8 qualified as Byte.Str.Char8
 import Data.ByteString.Lazy qualified as Lazy (ByteString)
-import Data.CaseInsensitive qualified as CaseIns
 import Network.HTTP.Client (Manager, Request, Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
-import Network.HTTP.Types (Header, Method, Query)
+import Network.HTTP.Types (Method, Query)
 import Network.HTTP.Types.URI qualified as URI
+import Network.JotForm.Utils qualified as Utils
 
 type Path = Str.ByteString
 
@@ -48,7 +48,7 @@ data ApiClient = MkApiClient
 
 -- | The User-Agent which is used for all the requests made to JotForm.
 userAgent :: Str.ByteString
-userAgent = ascii "JOTFORM_HASKELL_WRAPPER"
+userAgent = Utils.ascii "JOTFORM_HASKELL_WRAPPER"
 
 defaultSecureRequest :: Request
 defaultSecureRequest =
@@ -72,7 +72,7 @@ defaultApiClient' :: ApiKey -> Manager -> ApiClient
 defaultApiClient' key manager =
     MkApiClient
         { baseUrl = DefaultBaseUrl
-        , apiVersion = ascii "v1"
+        , apiVersion = Utils.ascii "v1"
         , apiKey = key
         , outputType = JsonOutput
         , debugMode = DebugOff
@@ -81,8 +81,8 @@ defaultApiClient' key manager =
 
 baseUrlToString :: BaseUrl -> Str.ByteString
 baseUrlToString = \case
-    DefaultBaseUrl -> ascii "api.jotform.com"
-    EuBaseUrl -> ascii "eu-api.jotform.com"
+    DefaultBaseUrl -> Utils.ascii "api.jotform.com"
+    EuBaseUrl -> Utils.ascii "eu-api.jotform.com"
 
 fetchUrl
     :: ApiClient
@@ -101,18 +101,12 @@ toRequest client path query method =
         , Client.method = method
         , Client.queryString = URI.renderQuery False query
         , Client.requestHeaders =
-            [ mkHeader "ApiKey" $ apiKey client
-            , mkHeader "User-Agent" userAgent
+            [ Utils.mkHeader "ApiKey" $ apiKey client
+            , Utils.mkHeader "User-Agent" userAgent
             ]
         }
   where
     versionPath = Byte.Str.Char8.cons '/' $ apiVersion client
     outputPath = case outputType client of
         JsonOutput -> Byte.Str.empty
-        XmlOutput -> ascii ".xml"
-
-mkHeader :: String -> Str.ByteString -> Header
-mkHeader key val = (CaseIns.mk $ ascii key, val)
-
-ascii :: String -> Str.ByteString
-ascii = Byte.Str.Char8.pack
+        XmlOutput -> Utils.ascii ".xml"
