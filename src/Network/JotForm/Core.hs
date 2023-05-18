@@ -5,6 +5,7 @@ module Network.JotForm.Core
     , DebugMode (..)
     , Path
     , ApiKey
+    , JsonException (..)
     , userAgent
     , defaultApiClient
     , defaultApiClient'
