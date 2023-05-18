@@ -73,7 +73,7 @@ defaultSecureRequest =
 -- | Creates an 'ApiClient' using default settings, and the default
 -- TLS-enabled manager config from @http-client-tls@.
 --
--- To use a different 'Manager' instead use the 'defaultApiClient'' function.
+-- To pass a different 'Manager' instead use the 'defaultApiClient'' function.
 defaultApiClient :: ApiKey -> IO ApiClient
 defaultApiClient key = do
     manager <- Client.newManager Client.TLS.tlsManagerSettings
