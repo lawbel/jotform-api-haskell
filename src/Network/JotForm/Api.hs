@@ -10,6 +10,8 @@ module Network.JotForm.Api
     , getUsage'
     , getForms
     , getForms'
+    , getSubmissions
+    , getSubmissions'
     ) where
 
 import Control.Applicative (empty)
@@ -126,5 +128,16 @@ getForms' client config =
     Core.fetchJson
         client
         (Utils.ascii "/user/forms")
+        (listConfigToQuery config)
+        Method.methodGet
+
+getSubmissions :: FromJSON a => ApiClient -> ListConfig -> IO a
+getSubmissions client config = getSubmissions' client config >>= simplifyIO
+
+getSubmissions' :: FromJSON a => ApiClient -> ListConfig -> IO (Response a)
+getSubmissions' client config =
+    Core.fetchJson
+        client
+        (Utils.ascii "/user/submissions")
         (listConfigToQuery config)
         Method.methodGet
