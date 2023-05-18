@@ -55,14 +55,14 @@ plusEncode = True
 simplify :: FromJSON a => Response Value -> Either String a
 simplify response = do
     object <- case Client.responseBody response of
-        Json.Object obj -> pure obj
+        Json.Object obj -> Right obj
         _ -> Left "response is not an object"
     content <- case Json.Map.lookup (Json.Key.fromString "content") object of
-        Just con -> pure con
+        Just con -> Right con
         Nothing -> Left "response has no 'content' field"
     case Json.fromJSON content of
+        Json.Success val -> Right val
         Json.Error err -> Left err
-        Json.Success a -> Right a
 
 -- | Run 'simplify' and throw an exception if it failed.
 simplifyIO :: FromJSON a => Response Value -> IO a
