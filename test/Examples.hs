@@ -16,7 +16,7 @@ import Optics.Core ((%), (^?))
 
 getForms :: ApiClient -> IO ()
 getForms client = do
-    forms :: [Value] <- JotForm.getForms client JotForm.defaultListConfig
+    forms :: [Value] <- JotForm.getForms client JotForm.defaultListOptions
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title
@@ -27,10 +27,10 @@ getLatestSubmissions client = do
     for_ submissions $ \sub -> do
         Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub
   where
-    options = JotForm.defaultListConfig
+    options = JotForm.defaultListOptions
         { JotForm.offset = Just 0
         , JotForm.limit = Just 100
-        , JotForm.orderBy = Just JotForm.OrderByCreatedAt
+        , JotForm.orderBy = Just JotForm.ByCreatedAt
         }
 
 -- | Use the API key in either of:

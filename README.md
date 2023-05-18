@@ -17,7 +17,7 @@ main :: IO ()
 main = do
     client <- JotForm.defaultApiClient "YOUR API KEY"
     forms :: [Json.Value] <-
-        JotForm.getForms client JotForm.defaultListConfig
+        JotForm.getForms client JotForm.defaultListOptions
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title
@@ -40,10 +40,10 @@ main = do
     for_ submissions $ \sub -> do
         Byte.putStrLn $ encodePretty sub
   where
-    options = JotForm.defaultListConfig
+    options = JotForm.defaultListOptions
         { JotForm.offset = Just 0
         , JotForm.limit = Just 100
-        , JotForm.orderBy = Just JotForm.OrderByCreatedAt
+        , JotForm.orderBy = Just JotForm.ByCreatedAt
         }
 ```
 

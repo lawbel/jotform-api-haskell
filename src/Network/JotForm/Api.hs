@@ -1,8 +1,8 @@
 module Network.JotForm.Api
     ( OrderBy (..)
-    , ListConfig (..)
-    , defaultListConfig
-    , listConfigToQuery
+    , ListOptions (..)
+    , defaultListOptions
+    , listOptionsToQuery
     , orderByToString
     , getUser
     , getUser'
@@ -31,18 +31,18 @@ import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
 
 data OrderBy
-    = OrderById
-    | OrderByUsername
-    | OrderByTitle
-    | OrderByStatus
-    | OrderByCreatedAt
-    | OrderByUpdatedAt
-    | OrderByNew
-    | OrderByAll
-    | OrderBySlug
+    = ById
+    | ByUsername
+    | ByTitle
+    | ByStatus
+    | ByCreatedAt
+    | ByUpdatedAt
+    | ByNew
+    | ByAll
+    | BySlug
     deriving (Bounded, Enum, Eq, Ord, Read, Show)
 
-data ListConfig = MkListConfig
+data ListOptions = MkListOptions
     { offset :: Maybe Int
     , limit :: Maybe Int
     , filters :: Maybe Value
@@ -50,17 +50,17 @@ data ListConfig = MkListConfig
     }
     deriving (Eq, Ord, Show, Read)
 
-defaultListConfig :: ListConfig
-defaultListConfig =
-    MkListConfig
+defaultListOptions :: ListOptions
+defaultListOptions =
+    MkListOptions
         { offset = Nothing
         , limit = Nothing
         , filters = Nothing
         , orderBy = Nothing
         }
 
-listConfigToQuery :: ListConfig -> Query
-listConfigToQuery config = do
+listOptionsToQuery :: ListOptions -> Query
+listOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
@@ -68,23 +68,23 @@ listConfigToQuery config = do
   where
     keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
     vals =
-        [ Utils.showAscii <$> offset config
-        , Utils.showAscii <$> limit config
-        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters config
-        , orderByToString <$> orderBy config
+        [ Utils.showAscii <$> offset options
+        , Utils.showAscii <$> limit options
+        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters options
+        , orderByToString <$> orderBy options
         ]
 
 orderByToString :: OrderBy -> Str.ByteString
 orderByToString = \case
-    OrderById -> Utils.ascii "id"
-    OrderByUsername -> Utils.ascii "username"
-    OrderByTitle -> Utils.ascii "title"
-    OrderByStatus -> Utils.ascii "status"
-    OrderByCreatedAt -> Utils.ascii "created_at"
-    OrderByUpdatedAt -> Utils.ascii "updated_at"
-    OrderByNew -> Utils.ascii "new"
-    OrderByAll -> Utils.ascii "count"
-    OrderBySlug -> Utils.ascii "slug"
+    ById -> Utils.ascii "id"
+    ByUsername -> Utils.ascii "username"
+    ByTitle -> Utils.ascii "title"
+    ByStatus -> Utils.ascii "status"
+    ByCreatedAt -> Utils.ascii "created_at"
+    ByUpdatedAt -> Utils.ascii "updated_at"
+    ByNew -> Utils.ascii "new"
+    ByAll -> Utils.ascii "count"
+    BySlug -> Utils.ascii "slug"
 
 plusEncode :: Bool
 plusEncode = True
@@ -120,24 +120,24 @@ getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client (Utils.ascii "/user/usage") [] Method.methodGet
 
-getForms :: FromJSON a => ApiClient -> ListConfig -> IO a
-getForms client config = getForms' client config >>= simplifyIO
+getForms :: FromJSON a => ApiClient -> ListOptions -> IO a
+getForms client options = getForms' client options >>= simplifyIO
 
-getForms' :: FromJSON a => ApiClient -> ListConfig -> IO (Response a)
-getForms' client config =
+getForms' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
+getForms' client options =
     Core.fetchJson
         client
         (Utils.ascii "/user/forms")
-        (listConfigToQuery config)
+        (listOptionsToQuery options)
         Method.methodGet
 
-getSubmissions :: FromJSON a => ApiClient -> ListConfig -> IO a
-getSubmissions client config = getSubmissions' client config >>= simplifyIO
+getSubmissions :: FromJSON a => ApiClient -> ListOptions -> IO a
+getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
-getSubmissions' :: FromJSON a => ApiClient -> ListConfig -> IO (Response a)
-getSubmissions' client config =
+getSubmissions' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
+getSubmissions' client options =
     Core.fetchJson
         client
         (Utils.ascii "/user/submissions")
-        (listConfigToQuery config)
+        (listOptionsToQuery options)
         Method.methodGet
