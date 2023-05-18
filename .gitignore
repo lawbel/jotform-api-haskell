@@ -1,3 +1,6 @@
 dist-newstyle/
 result
 .vscode/
+
+test-api-key.txt
+test-api-key-eu.txt

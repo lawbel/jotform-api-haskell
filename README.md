@@ -1,5 +1,36 @@
 # jotform-api-python
 
+## Examples
+
+Print all forms of the user:
+
+```haskell
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+import qualified Data.Aeson as Json          -- aeson
+import           Data.Aeson.Optics           -- aeson-optics
+import qualified Data.Text.IO as Text.IO     -- text
+import qualified Network.JotForm as JotForm  -- jotform-api-haskell
+import           Optics.Core                 -- optics-core
+
+main :: IO ()
+main = do
+    client <- JotForm.defaultApiClient "YOUR API KEY"
+    forms :: [Json.Value] <-
+        JotForm.getForms client Nothing Nothing Nothing Nothing
+    for_ forms $ \form -> do
+        let title = form ^? key "title" % _String
+        Text.IO.putStrLn $ maybe "null" id title
+```
+
+## Testing
+
+To run a test suite with equivalent code from the above examples:
+
+- make a file `test-api-key.txt` and save a jotform API key in it (or
+  `test-api-key-eu.txt` if the associated account is in EU safe mode)
+- run `cabal run examples` or `cabal test examples` (the former shows
+  the full output from running the tests)
+
 ## Nix
 
 For those so inclined, there is a `flake.nix` file set up. So you can
