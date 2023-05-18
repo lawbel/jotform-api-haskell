@@ -10,7 +10,8 @@ import Control.Applicative (empty)
 import Data.Aeson (FromJSON, Value)
 import Data.ByteString qualified as Str (ByteString)
 import Network.HTTP.Client (Response)
-import Network.HTTP.Types qualified as Client
+import Network.HTTP.Types.Method qualified as Method
+import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
@@ -44,11 +45,11 @@ plusEncode = True
 
 getUser :: FromJSON a => ApiClient -> IO (Response a)
 getUser client =
-    Core.fetchJson client (Utils.ascii "/user") [] Client.methodGet
+    Core.fetchJson client (Utils.ascii "/user") [] Method.methodGet
 
 getUsage :: FromJSON a => ApiClient -> IO (Response a)
 getUsage client =
-    Core.fetchJson client (Utils.ascii "/user/usage") [] Client.methodGet
+    Core.fetchJson client (Utils.ascii "/user/usage") [] Method.methodGet
 
 getForms
     :: FromJSON a
@@ -59,13 +60,13 @@ getForms
     -> Maybe OrderBy
     -> IO (Response a)
 getForms client offset limit filters order =
-    Core.fetchJson client (Utils.ascii "/user/forms") query Client.methodGet
+    Core.fetchJson client (Utils.ascii "/user/forms") query Method.methodGet
   where
     keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
     vals =
         [ Utils.showAscii <$> offset
         , Utils.showAscii <$> limit
-        , Client.urlEncode plusEncode . Utils.encodeStrict <$> filters
+        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters
         , orderByToString <$> order
         ]
     query = do
