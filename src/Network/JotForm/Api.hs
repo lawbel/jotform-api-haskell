@@ -2,6 +2,7 @@ module Network.JotForm.Api
     ( OrderBy (..)
     , ListConfig (..)
     , defaultListConfig
+    , listConfigToQuery
     , orderByToString
     , getUser
     , getUser'
@@ -20,6 +21,7 @@ import Data.Aeson.KeyMap qualified as Json.Map
 import Data.ByteString qualified as Str (ByteString)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
+import Network.HTTP.Types (Query)
 import Network.HTTP.Types.Method qualified as Method
 import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
@@ -54,6 +56,21 @@ defaultListConfig =
         , filters = Nothing
         , orderBy = Nothing
         }
+
+listConfigToQuery :: ListConfig -> Query
+listConfigToQuery config = do
+    (key, mVal) <- keys `zip` vals
+    case mVal of
+        Nothing -> empty
+        Just val -> pure (key, Just val)
+  where
+    keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
+    vals =
+        [ Utils.showAscii <$> offset config
+        , Utils.showAscii <$> limit config
+        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters config
+        , orderByToString <$> orderBy config
+        ]
 
 orderByToString :: OrderBy -> Str.ByteString
 orderByToString = \case
@@ -106,17 +123,8 @@ getForms client config = getForms' client config >>= simplifyIO
 
 getForms' :: FromJSON a => ApiClient -> ListConfig -> IO (Response a)
 getForms' client config =
-    Core.fetchJson client (Utils.ascii "/user/forms") query Method.methodGet
-  where
-    keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
-    vals =
-        [ Utils.showAscii <$> offset config
-        , Utils.showAscii <$> limit config
-        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters config
-        , orderByToString <$> orderBy config
-        ]
-    query = do
-        (key, mVal) <- keys `zip` vals
-        case mVal of
-            Nothing -> empty
-            Just val -> pure (key, Just val)
+    Core.fetchJson
+        client
+        (Utils.ascii "/user/forms")
+        (listConfigToQuery config)
+        Method.methodGet
