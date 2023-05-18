@@ -8,6 +8,7 @@ Print all forms of the user:
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 import qualified Data.Aeson as Json          -- aeson
 import           Data.Aeson.Optics           -- aeson-optics
+import           Data.Foldable (for_)        -- base
 import qualified Data.Text.IO as Text.IO     -- text
 import qualified Network.JotForm as JotForm  -- jotform-api-haskell
 import           Optics.Core                 -- optics-core
