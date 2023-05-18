@@ -16,7 +16,7 @@ main :: IO ()
 main = do
     client <- JotForm.defaultApiClient "YOUR API KEY"
     forms :: [Json.Value] <-
-        JotForm.getForms client Nothing Nothing Nothing Nothing
+        JotForm.getForms client JotForm.defaultListConfig
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title

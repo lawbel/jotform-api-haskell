@@ -1,5 +1,7 @@
 module Network.JotForm.Api
     ( OrderBy (..)
+    , ListConfig (..)
+    , defaultListConfig
     , orderByToString
     , getUser
     , getUser'
@@ -35,6 +37,23 @@ data OrderBy
     | OrderByAll
     | OrderBySlug
     deriving (Bounded, Enum, Eq, Ord, Read, Show)
+
+data ListConfig = MkListConfig
+    { offset :: Maybe Int
+    , limit :: Maybe Int
+    , filters :: Maybe Value
+    , orderBy :: Maybe OrderBy
+    }
+    deriving (Eq, Ord, Show, Read)
+
+defaultListConfig :: ListConfig
+defaultListConfig =
+    MkListConfig
+        { offset = Nothing
+        , limit = Nothing
+        , filters = Nothing
+        , orderBy = Nothing
+        }
 
 orderByToString :: OrderBy -> Str.ByteString
 orderByToString = \case
@@ -82,34 +101,19 @@ getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client (Utils.ascii "/user/usage") [] Method.methodGet
 
-getForms
-    :: FromJSON a
-    => ApiClient
-    -> Maybe Int
-    -> Maybe Int
-    -> Maybe Value
-    -> Maybe OrderBy
-    -> IO a
-getForms client offset limit filters order =
-    getForms' client offset limit filters order >>= simplifyIO
+getForms :: FromJSON a => ApiClient -> ListConfig -> IO a
+getForms client config = getForms' client config >>= simplifyIO
 
-getForms'
-    :: FromJSON a
-    => ApiClient
-    -> Maybe Int
-    -> Maybe Int
-    -> Maybe Value
-    -> Maybe OrderBy
-    -> IO (Response a)
-getForms' client offset limit filters order =
+getForms' :: FromJSON a => ApiClient -> ListConfig -> IO (Response a)
+getForms' client config =
     Core.fetchJson client (Utils.ascii "/user/forms") query Method.methodGet
   where
     keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
     vals =
-        [ Utils.showAscii <$> offset
-        , Utils.showAscii <$> limit
-        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters
-        , orderByToString <$> order
+        [ Utils.showAscii <$> offset config
+        , Utils.showAscii <$> limit config
+        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters config
+        , orderByToString <$> orderBy config
         ]
     query = do
         (key, mVal) <- keys `zip` vals

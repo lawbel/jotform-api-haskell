@@ -14,8 +14,7 @@ import Optics.Core ((%), (^?))
 
 getFormsExample :: ApiClient -> IO ()
 getFormsExample client = do
-    forms :: [Value] <-
-        JotForm.getForms client Nothing Nothing Nothing Nothing
+    forms :: [Value] <- JotForm.getForms client JotForm.defaultListConfig
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title
