@@ -8,6 +8,8 @@ module Network.JotForm.Core
     , userAgent
     , defaultApiClient
     , defaultApiClient'
+    , defaultApiClientEu
+    , defaultApiClientEu'
     , baseUrlToString
     , fetch
     , fetchJson
@@ -88,6 +90,20 @@ defaultApiClient' key manager =
         , debugMode = DebugOff
         , httpManager = manager
         }
+
+-- | The same as 'defaultApiClient', but is set to use the EU endpoint - use
+-- this if your account is in EU Safe mode.
+defaultApiClientEu :: ApiKey -> IO ApiClient
+defaultApiClientEu key = do
+    def <- defaultApiClient key
+    pure $ def {baseUrl = EuBaseUrl}
+
+-- | The same as 'defaultApiClient'', but is set to use the EU endpoint - use
+-- this if your account is in EU Safe mode.
+defaultApiClientEu' :: ApiKey -> Manager -> ApiClient
+defaultApiClientEu' key manager =
+    let def = defaultApiClient' key manager
+    in  def {baseUrl = EuBaseUrl}
 
 baseUrlToString :: BaseUrl -> Str.ByteString
 baseUrlToString = \case
