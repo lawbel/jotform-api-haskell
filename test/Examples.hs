@@ -14,15 +14,15 @@ import Network.JotForm (ApiClient, ApiKey)
 import Network.JotForm qualified as JotForm
 import Optics.Core ((%), (^?))
 
-getFormsExample :: ApiClient -> IO ()
-getFormsExample client = do
+getForms :: ApiClient -> IO ()
+getForms client = do
     forms :: [Value] <- JotForm.getForms client JotForm.defaultListConfig
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title
 
-getLatestSubmissionsExample :: ApiClient -> IO ()
-getLatestSubmissionsExample client = do
+getLatestSubmissions :: ApiClient -> IO ()
+getLatestSubmissions client = do
     submissions :: [Value] <- JotForm.getSubmissions client options
     for_ submissions $ \sub -> do
         Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub
@@ -53,5 +53,5 @@ getClientFrom fileName mkClient = do
 main :: IO ()
 main = do
     client <- getClient
-    getFormsExample client
-    getLatestSubmissionsExample client
+    getForms client
+    getLatestSubmissions client
