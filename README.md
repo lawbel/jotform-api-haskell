@@ -35,15 +35,13 @@ import qualified Network.JotForm as JF               -- jotform-api-haskell
 main :: IO ()
 main = do
     client <- JF.defaultApiClient "YOUR API KEY"
-    submissions :: [Json.Value] <- JF.getSubmissions client options
+    submissions :: [Json.Value] <- JF.getSubmissions client $
+        JF.defaultListOptions
+            { JF.offset = Just 0
+            , JF.limit = Just 100
+            , JF.orderBy = Just JF.ByCreatedAt }
     for_ submissions $ \sub -> do
         Byte.putStrLn $ encodePretty sub
-  where
-    options = JF.defaultListOptions
-        { JF.offset = Just 0
-        , JF.limit = Just 100
-        , JF.orderBy = Just JF.ByCreatedAt
-        }
 ```
 
 ## Testing

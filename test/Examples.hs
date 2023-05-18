@@ -23,15 +23,15 @@ getForms client = do
 
 getLatestSubmissions :: ApiClient -> IO ()
 getLatestSubmissions client = do
-    submissions :: [Value] <- JotForm.getSubmissions client options
+    submissions :: [Value] <-
+        JotForm.getSubmissions client $
+            JotForm.defaultListOptions
+                { JotForm.offset = Just 0
+                , JotForm.limit = Just 100
+                , JotForm.orderBy = Just JotForm.ByCreatedAt
+                }
     for_ submissions $ \sub -> do
         Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub
-  where
-    options = JotForm.defaultListOptions
-        { JotForm.offset = Just 0
-        , JotForm.limit = Just 100
-        , JotForm.orderBy = Just JotForm.ByCreatedAt
-        }
 
 -- | Use the API key in either of:
 --
