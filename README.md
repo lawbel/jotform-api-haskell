@@ -6,21 +6,20 @@ Print all forms of the user:
 
 ```haskell
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-import qualified Data.Aeson as Json          -- aeson
-import           Data.Aeson.Optics           -- aeson-optics
-import           Data.Foldable (for_)        -- base
-import qualified Data.Text.IO as Text.IO     -- text
-import qualified Network.JotForm as JotForm  -- jotform-api-haskell
-import           Optics.Core                 -- optics-core
+import qualified Data.Aeson as Json     -- aeson
+import           Data.Aeson.Optics      -- aeson-optics
+import           Data.Foldable (for_)   -- base
+import qualified Data.Text.IO as Text   -- text
+import qualified Network.JotForm as JF  -- jotform-api-haskell
+import           Optics.Core            -- optics-core
 
 main :: IO ()
 main = do
-    client <- JotForm.defaultApiClient "YOUR API KEY"
-    forms :: [Json.Value] <-
-        JotForm.getForms client JotForm.defaultListOptions
+    client <- JF.defaultApiClient "YOUR API KEY"
+    forms :: [Json.Value] <- JF.getForms client JF.defaultListOptions
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
-        Text.IO.putStrLn $ maybe "null" id title
+        Text.putStrLn $ maybe "null" id title
 ```
 
 Get latest 100 submissions ordered by creation date:
@@ -31,19 +30,19 @@ import qualified Data.Aeson as Json                  -- aeson
 import           Data.Aeson.Encode.Pretty            -- aeson-pretty
 import qualified Data.ByteString.Lazy.Char8 as Byte  -- bytestring
 import           Data.Foldable (for_)                -- base
-import qualified Network.JotForm as JotForm          -- jotform-api-haskell
+import qualified Network.JotForm as JF               -- jotform-api-haskell
 
 main :: IO ()
 main = do
-    client <- JotForm.defaultApiClient "YOUR API KEY"
-    submissions :: [Json.Value] <- JotForm.getSubmissions client options
+    client <- JF.defaultApiClient "YOUR API KEY"
+    submissions :: [Json.Value] <- JF.getSubmissions client options
     for_ submissions $ \sub -> do
         Byte.putStrLn $ encodePretty sub
   where
-    options = JotForm.defaultListOptions
-        { JotForm.offset = Just 0
-        , JotForm.limit = Just 100
-        , JotForm.orderBy = Just JotForm.ByCreatedAt
+    options = JF.defaultListOptions
+        { JF.offset = Just 0
+        , JF.limit = Just 100
+        , JF.orderBy = Just JF.ByCreatedAt
         }
 ```
 
