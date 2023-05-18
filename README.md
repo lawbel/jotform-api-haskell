@@ -1,4 +1,4 @@
-# jotform-api-python
+# jotform-api-haskell
 
 ## Examples
 
