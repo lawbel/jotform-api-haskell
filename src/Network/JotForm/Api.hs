@@ -12,6 +12,14 @@ module Network.JotForm.Api
     , getForms'
     , getSubmissions
     , getSubmissions'
+    , getSubUsers
+    , getSubUsers'
+    , getFolders
+    , getFolders'
+    , getReports
+    , getReports'
+    , getSettings
+    , getSettings'
     ) where
 
 import Control.Applicative (empty)
@@ -141,3 +149,31 @@ getSubmissions' client options =
         (Utils.ascii "/user/submissions")
         (listOptionsToQuery options)
         Method.methodGet
+
+getSubUsers :: FromJSON a => ApiClient -> IO a
+getSubUsers client = getSubUsers' client >>= simplifyIO
+
+getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
+getSubUsers' client =
+    Core.fetchJson client (Utils.ascii "/user/subusers") [] Method.methodGet
+
+getFolders :: FromJSON a => ApiClient -> IO a
+getFolders client = getFolders' client >>= simplifyIO
+
+getFolders' :: FromJSON a => ApiClient -> IO (Response a)
+getFolders' client =
+    Core.fetchJson client (Utils.ascii "/user/folders") [] Method.methodGet
+
+getReports :: FromJSON a => ApiClient -> IO a
+getReports client = getReports' client >>= simplifyIO
+
+getReports' :: FromJSON a => ApiClient -> IO (Response a)
+getReports' client =
+    Core.fetchJson client (Utils.ascii "/user/reports") [] Method.methodGet
+
+getSettings :: FromJSON a => ApiClient -> IO a
+getSettings client = getSettings' client >>= simplifyIO
+
+getSettings' :: FromJSON a => ApiClient -> IO (Response a)
+getSettings' client =
+    Core.fetchJson client (Utils.ascii "/user/settings") [] Method.methodGet
