@@ -3,9 +3,11 @@
 
 import Control.Applicative ((<|>))
 import Data.Aeson (Value)
+import Data.Aeson.Encode.Pretty qualified as Json.Pretty
 import Data.Aeson.Optics (key, _String)
 import Data.ByteString qualified as Byte.Str
 import Data.ByteString.Char8 qualified as Byte.Str.Char8
+import Data.ByteString.Lazy.Char8 qualified as Byte.Lazy.Char8
 import Data.Foldable (for_)
 import Data.Text.IO qualified as Text.IO
 import Network.JotForm (ApiClient, ApiKey)
@@ -18,6 +20,18 @@ getFormsExample client = do
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         Text.IO.putStrLn $ maybe "null" id title
+
+getLatestSubmissionsExample :: ApiClient -> IO ()
+getLatestSubmissionsExample client = do
+    submissions :: [Value] <- JotForm.getSubmissions client options
+    for_ submissions $ \sub -> do
+        Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub
+  where
+    options = JotForm.defaultListConfig
+        { JotForm.offset = Just 0
+        , JotForm.limit = Just 100
+        , JotForm.orderBy = Just JotForm.OrderByCreatedAt
+        }
 
 -- | Use the API key in either of:
 --
@@ -40,3 +54,4 @@ main :: IO ()
 main = do
     client <- getClient
     getFormsExample client
+    getLatestSubmissionsExample client

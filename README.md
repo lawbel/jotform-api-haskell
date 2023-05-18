@@ -23,6 +23,30 @@ main = do
         Text.IO.putStrLn $ maybe "null" id title
 ```
 
+Get latest 100 submissions ordered by creation date:
+
+```haskell
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+import qualified Data.Aeson as Json                  -- aeson
+import           Data.Aeson.Encode.Pretty            -- aeson-pretty
+import qualified Data.ByteString.Lazy.Char8 as Byte  -- bytestring
+import           Data.Foldable (for_)                -- base
+import qualified Network.JotForm as JotForm          -- jotform-api-haskell
+
+main :: IO ()
+main = do
+    client <- JotForm.defaultApiClient "YOUR API KEY"
+    submissions :: [Json.Value] <- JotForm.getSubmissions client options
+    for_ submissions $ \sub -> do
+        Byte.putStrLn $ encodePretty sub
+  where
+    options = JotForm.defaultListConfig
+        { JotForm.offset = Just 0
+        , JotForm.limit = Just 100
+        , JotForm.orderBy = Just JotForm.OrderByCreatedAt
+        }
+```
+
 ## Testing
 
 To run a test suite with equivalent code from the above examples:
