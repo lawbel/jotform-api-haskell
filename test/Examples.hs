@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Control.Applicative ((<|>))
-import Data.Aeson (Value)
+import Data.Aeson (ToJSON, Value)
 import Data.Aeson.Encode.Pretty qualified as Json.Pretty
 import Data.Aeson.Optics (key, _String)
 import Data.ByteString qualified as Byte.Str
@@ -13,6 +13,9 @@ import Data.Text.IO qualified as Text.IO
 import Network.JotForm (ApiClient, ApiKey)
 import Network.JotForm qualified as JotForm
 import Optics.Core ((%), (^?))
+
+putJsonPretty :: ToJSON a => a -> IO ()
+putJsonPretty = Byte.Lazy.Char8.putStrLn . Json.Pretty.encodePretty
 
 getForms :: ApiClient -> IO ()
 getForms client = do
@@ -30,8 +33,7 @@ getLatestSubmissions client = do
                 , JotForm.limit = Just 100
                 , JotForm.orderBy = Just "created_at"
                 }
-    for_ submissions $ \sub -> do
-        Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub
+    for_ submissions putJsonPretty
 
 -- | Use the API key in either of:
 --
