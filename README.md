@@ -44,6 +44,31 @@ main = do
         Byte.putStrLn $ encodePretty sub
 ```
 
+Submission and form filter examples:
+
+```haskell
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+import           Data.Aeson             -- aeson
+import qualified Network.JotForm as JF  -- jotform-api-haskell
+
+main :: IO ()
+main = do
+    client <- JF.defaultApiClient "YOUR API KEY"
+
+    let submissionFilter = object
+            [ "created_at:gt" .= ("DATE" :: String) ]
+    submissions :: [Value] <- JF.getSubmissions client $
+        JF.defaultListOptions { JF.filters = Just submissionFilter }
+    print submissions
+
+    let formFilter = object
+            [ "new:gt" .= ("0" :: String)
+            , "status" .= ("ENABLED" :: String) ]
+    forms :: [Value] <- JF.getForms client $
+        JF.defaultListOptions { JF.filters = Just formFilter }
+    print forms
+```
+
 ## Testing
 
 To run a test suite with equivalent code from the above examples:

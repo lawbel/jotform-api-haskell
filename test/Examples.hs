@@ -2,7 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Control.Applicative ((<|>))
-import Data.Aeson (ToJSON, Value)
+import Data.Aeson (ToJSON, Value, (.=))
+import Data.Aeson qualified as Json
 import Data.Aeson.Encode.Pretty qualified as Json.Pretty
 import Data.Aeson.Optics (key, _String)
 import Data.ByteString qualified as Byte.Str
@@ -34,6 +35,29 @@ getLatestSubmissions client = do
                 , JotForm.orderBy = Just "created_at"
                 }
     for_ submissions putJsonPretty
+
+submissionAndFormFilters :: ApiClient -> IO ()
+submissionAndFormFilters client = do
+    let submissionFilter =
+            Json.object
+                [ "created_at:gt" .= ("2000-01-01 00:00:00" :: String)
+                ]
+    submissions :: [Value] <-
+        JotForm.getSubmissions client $
+            JotForm.defaultListOptions
+                { JotForm.filters = Just submissionFilter
+                }
+    putJsonPretty submissions
+
+    let formFilter =
+            Json.object
+                [ "new:gt" .= ("0" :: String)
+                , "status" .= ("ENABLED" :: String)
+                ]
+    forms :: [Value] <-
+        JotForm.getForms client $
+            JotForm.defaultListOptions {JotForm.filters = Just formFilter}
+    putJsonPretty forms
 
 -- | Use the API key in either of:
 --
