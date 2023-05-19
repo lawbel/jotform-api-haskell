@@ -31,7 +31,6 @@ import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Types (Query)
 import Network.HTTP.Types.Method qualified as Method
-import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
@@ -64,12 +63,9 @@ listOptionsToQuery options = do
     vals =
         [ Utils.showAscii <$> offset options
         , Utils.showAscii <$> limit options
-        , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters options
+        , Utils.encodeStrict <$> filters options
         , orderBy options
         ]
-
-plusEncode :: Bool
-plusEncode = True
 
 -- | Pull out the "content" field from a response body and return it.
 simplify :: FromJSON a => Response Value -> Either String a
