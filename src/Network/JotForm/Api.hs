@@ -1,9 +1,7 @@
 module Network.JotForm.Api
-    ( OrderBy (..)
-    , ListOptions (..)
+    ( ListOptions (..)
     , defaultListOptions
     , listOptionsToQuery
-    , orderByToString
     , getUser
     , getUser'
     , getUsage
@@ -38,23 +36,11 @@ import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
 
-data OrderBy
-    = ById
-    | ByUsername
-    | ByTitle
-    | ByStatus
-    | ByCreatedAt
-    | ByUpdatedAt
-    | ByNew
-    | ByAll
-    | BySlug
-    deriving (Bounded, Enum, Eq, Ord, Read, Show)
-
 data ListOptions = MkListOptions
     { offset :: Maybe Int
     , limit :: Maybe Int
     , filters :: Maybe Value
-    , orderBy :: Maybe OrderBy
+    , orderBy :: Maybe Str.ByteString
     }
     deriving (Eq, Ord, Show, Read)
 
@@ -79,20 +65,8 @@ listOptionsToQuery options = do
         [ Utils.showAscii <$> offset options
         , Utils.showAscii <$> limit options
         , URI.urlEncode plusEncode . Utils.encodeStrict <$> filters options
-        , orderByToString <$> orderBy options
+        , orderBy options
         ]
-
-orderByToString :: OrderBy -> Str.ByteString
-orderByToString = \case
-    ById -> Utils.ascii "id"
-    ByUsername -> Utils.ascii "username"
-    ByTitle -> Utils.ascii "title"
-    ByStatus -> Utils.ascii "status"
-    ByCreatedAt -> Utils.ascii "created_at"
-    ByUpdatedAt -> Utils.ascii "updated_at"
-    ByNew -> Utils.ascii "new"
-    ByAll -> Utils.ascii "count"
-    BySlug -> Utils.ascii "slug"
 
 plusEncode :: Bool
 plusEncode = True

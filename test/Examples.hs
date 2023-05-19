@@ -28,7 +28,7 @@ getLatestSubmissions client = do
             JotForm.defaultListOptions
                 { JotForm.offset = Just 0
                 , JotForm.limit = Just 100
-                , JotForm.orderBy = Just JotForm.ByCreatedAt
+                , JotForm.orderBy = Just "created_at"
                 }
     for_ submissions $ \sub -> do
         Byte.Lazy.Char8.putStrLn $ Json.Pretty.encodePretty sub

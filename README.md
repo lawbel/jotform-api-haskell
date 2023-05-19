@@ -39,7 +39,7 @@ main = do
         JF.defaultListOptions
             { JF.offset = Just 0
             , JF.limit = Just 100
-            , JF.orderBy = Just JF.ByCreatedAt }
+            , JF.orderBy = Just "created_at" }
     for_ submissions $ \sub -> do
         Byte.putStrLn $ encodePretty sub
 ```
