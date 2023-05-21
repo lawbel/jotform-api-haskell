@@ -152,7 +152,7 @@ toRequest client path query method =
         , Client.path = versionPath <> path <> outputPath
         , Client.method = method
         , Client.queryString = queryStrIf $ method == Method.methodGet
-        , Client.requestBody = Client.RequestBodyBS $ queryStrIf isPostPut
+        , Client.requestBody = Client.RequestBodyBS $ queryStrIf isPostOrPut
         , Client.requestHeaders =
             addUrlEncHeader
                 [ (Utils.headerName "ApiKey", apiKey client)
@@ -160,12 +160,12 @@ toRequest client path query method =
                 ]
         }
   where
-    isPostPut = method `elem` [Method.methodPost, Method.methodPut]
+    isPostOrPut = method `elem` [Method.methodPost, Method.methodPut]
     versionPath = Byte.Str.Char8.cons '/' $ apiVersion client
     outputPath = case outputType client of
         JsonOutput -> Byte.Str.empty
     queryStrIf test =
         if test then URI.renderQuery False query else Byte.Str.empty
-    addUrlEncHeader = if isPostPut then (urlEncHeader :) else id
+    addUrlEncHeader = if isPostOrPut then (urlEncHeader :) else id
     urlEncHeader = (Header.hContentType, Utils.ascii urlEnc)
     urlEnc = "application/x-www-form-urlencoded"
