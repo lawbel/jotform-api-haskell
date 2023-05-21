@@ -1,6 +1,11 @@
 module Network.JotForm.Api
-    ( -- * API Endpoints
+    ( -- * Functions Provided
       -- $intro
+
+      -- * Table Overview
+      -- $summary
+
+      -- * API Endpoints
 
       -- ** \/user
       getUser
@@ -36,7 +41,7 @@ module Network.JotForm.Api
     , updateSettings
     , updateSettings'
 
-      -- * Types
+      -- * Helper Types
 
       -- ** ListOptions
     , ListOptions (..)
@@ -106,8 +111,35 @@ import Network.JotForm.Utils qualified as Utils
 -- >     , responseVersion = HTTP/1.1
 -- >     , ... }
 
+-- $summary
+--
+-- Below is a table summary of the API functions available.
+--
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | Endpoint \\ Method    | GET              | POST             | PUT | DELETE |
+-- +=======================+==================+==================+=====+========+
+-- | @\/user@              | 'getUser'        | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/usage@       | 'getUsage'       | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/forms@       | 'getForms'       | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/submissions@ | 'getSubmissions' | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/subusers@    | 'getSubUsers'    | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/folders@     | 'getFolders'     | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/reports@     | 'getReports'     | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/settings@    | 'getSettings'    | 'updateSettings' | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
+
+-- | A collection of key-value options.
 type Options = [(Str.ByteString, Str.ByteString)]
 
+-- | A bundle of options that are re-used in a couple of places in the API
+-- where it can potentially return a (very) long list of values.
 data ListOptions = MkListOptions
     { offset :: Maybe Int
     , limit :: Maybe Int
@@ -116,6 +148,8 @@ data ListOptions = MkListOptions
     }
     deriving (Eq, Ord, Show, Read)
 
+-- | A default 'ListOptions' value; it simply sets 'Nothing' as the value
+-- of each option, so that none of these options is specified.
 defaultListOptions :: ListOptions
 defaultListOptions =
     MkListOptions
@@ -125,6 +159,8 @@ defaultListOptions =
         , orderBy = Nothing
         }
 
+-- | Conversion function from 'ListOptions' to 'Query' - not something that
+-- end users will normally need, but provided just in case.
 listOptionsToQuery :: ListOptions -> Query
 listOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
@@ -140,6 +176,8 @@ listOptionsToQuery options = do
         , orderBy options
         ]
 
+-- | Conversion function from 'Options' to 'Query' - not something that
+-- end users will normally need, but provided just in case.
 optionsToQuery :: Options -> Query
 optionsToQuery = URI.simpleQueryToQuery
 
@@ -156,9 +194,11 @@ simplify response = do
         Json.Success val -> Right val
         Json.Error err -> Left err
 
--- | Run 'simplify' and throw an exception if it failed.
+-- | Run @simplify@ and throw an exception if it failed.
 simplifyIO :: FromJSON a => Response Value -> IO a
 simplifyIO = either (throwIO . Core.MkJsonException) pure . simplify
+
+-- /user
 
 getUser :: FromJSON a => ApiClient -> IO a
 getUser client = getUser' client >>= simplifyIO
