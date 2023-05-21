@@ -29,6 +29,7 @@ import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
 import Network.HTTP.Types (Method, Query)
 import Network.HTTP.Types.Header qualified as Header
+import Network.HTTP.Types.Method qualified as Method
 import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Utils qualified as Utils
 
@@ -137,19 +138,34 @@ fetchJson client path query method = do
     requestJson = Utils.updateHeaders (acceptJson :) request
     acceptJson = (Header.hAccept, Utils.ascii "application/json")
 
+-- | Properly handles the methods needed by the JotForm API, which at time
+-- of writing are:
+--
+-- * 'Method.methodGet'
+-- * 'Method.methodPost'
+-- * 'Method.methodDelete'
+-- * 'Method.methodPut'
 toRequest :: ApiClient -> Path -> Query -> Method -> Request
 toRequest client path query method =
     defaultSecureRequest
         { Client.host = baseUrlToString $ baseUrl client
         , Client.path = versionPath <> path <> outputPath
         , Client.method = method
-        , Client.queryString = URI.renderQuery False query
+        , Client.queryString = queryStrIf $ method == Method.methodGet
+        , Client.requestBody = Client.RequestBodyBS $ queryStrIf isPostPut
         , Client.requestHeaders =
-            [ (Utils.headerName "ApiKey", apiKey client)
-            , (Header.hUserAgent, userAgent)
-            ]
+            addUrlEncHeader
+                [ (Utils.headerName "ApiKey", apiKey client)
+                , (Header.hUserAgent, userAgent)
+                ]
         }
   where
+    isPostPut = method `elem` [Method.methodPost, Method.methodPut]
     versionPath = Byte.Str.Char8.cons '/' $ apiVersion client
     outputPath = case outputType client of
         JsonOutput -> Byte.Str.empty
+    queryStrIf test =
+        if test then URI.renderQuery False query else Byte.Str.empty
+    addUrlEncHeader = if isPostPut then (urlEncHeader :) else id
+    urlEncHeader = (Header.hContentType, Utils.ascii urlEnc)
+    urlEnc = "application/x-www-form-urlencoded"
