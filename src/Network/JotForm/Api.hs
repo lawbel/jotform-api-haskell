@@ -193,11 +193,19 @@ newtype QuestionId = MkQuestionId {unQuestionId :: String}
 
 -- | A bundle of options that are re-used in a couple of places in the API
 -- where it can potentially return a (very) long list of values.
+--
+-- * if @offset = Nothing@ then the default value used by JotForm is 20
+-- * if @limit = Nothing@ then the default value used by JotForm is 20
+-- * the maximum @limit@ is 1000
 data ListOptions = MkListOptions
     { offset :: Maybe Int
+    -- ^ start of each result list; useful for pagination
     , limit :: Maybe Int
+    -- ^ number of results in each result list
     , filters :: Maybe Value
+    -- ^ filters the query results to fetch a specific submissions range
     , orderBy :: Maybe Str.ByteString
+    -- ^ order results by a field name
     }
     deriving (Eq, Ord, Show, Read)
 
