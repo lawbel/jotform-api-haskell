@@ -1,27 +1,51 @@
 module Network.JotForm.Api
-    ( ListOptions (..)
-    , defaultListOptions
-    , listOptionsToQuery
-    , Options
-    , optionsToQuery
-    , getUser
+    ( -- * API Endpoints
+      -- $intro
+
+      -- ** \/user
+      getUser
     , getUser'
+
+      -- *** \/user\/usage
     , getUsage
     , getUsage'
+
+      -- *** \/user\/forms
     , getForms
     , getForms'
+
+      -- *** \/user\/submissions
     , getSubmissions
     , getSubmissions'
+
+      -- *** \/user\/subusers
     , getSubUsers
     , getSubUsers'
+
+      -- *** \/user\/folders
     , getFolders
     , getFolders'
+
+      -- *** \/user\/reports
     , getReports
     , getReports'
+
+      -- *** \/user\/settings
     , getSettings
     , getSettings'
     , updateSettings
     , updateSettings'
+
+      -- * Types
+
+      -- ** ListOptions
+    , ListOptions (..)
+    , defaultListOptions
+    , listOptionsToQuery
+
+      -- ** Options
+    , Options
+    , optionsToQuery
     ) where
 
 import Control.Applicative (empty)
@@ -39,6 +63,48 @@ import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
+
+-- $intro
+--
+-- For every function available which interacts with a part of the JotForm
+-- API, we provide two variants: @function@ and @function'@.
+--
+-- The first variant, @function@, will be simpler to use as it just returns
+-- the content of the JSON body of the response. For example, a call
+-- to 'getUser' might return (after tidying up the output):
+--
+-- > {
+-- >     "name": "Example User",
+-- >     "email": "example@user.com",
+-- >     ...
+-- >     "status": "ACTIVE"
+-- > }
+--
+-- The second variant, @function'@, returns the raw 'Response' in full, so
+-- you can inspect e.g. the response headers if so needed. So a call to
+-- 'getUser'' might instead return (after tidying up the output):
+--
+-- > Response
+-- >     { responseStatus = Status
+-- >         { statusCode = 200
+-- >         , statusMessage = "OK" }
+-- >     , responseHeaders =
+-- >         [ ("Content-Type", "application/json")
+-- >         , ... ]
+-- >     , responseBody =
+-- >         {
+-- >             "content": {
+-- >                 "name": "Example User",
+-- >                 "email": "example@user.com",
+-- >                 ...
+-- >                 "status": "ACTIVE"
+-- >             },
+-- >             "duration": "12.34ms",
+-- >             "limit-left": 567,
+-- >             ...
+-- >         }
+-- >     , responseVersion = HTTP/1.1
+-- >     , ... }
 
 type Options = [(Str.ByteString, Str.ByteString)]
 
@@ -101,12 +167,16 @@ getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' client =
     Core.fetchJson client (Utils.ascii "/user") [] Method.methodGet
 
+-- /user/usage
+
 getUsage :: FromJSON a => ApiClient -> IO a
 getUsage client = getUsage' client >>= simplifyIO
 
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client (Utils.ascii "/user/usage") [] Method.methodGet
+
+-- /user/forms
 
 getForms :: FromJSON a => ApiClient -> ListOptions -> IO a
 getForms client options = getForms' client options >>= simplifyIO
@@ -119,6 +189,8 @@ getForms' client options =
         (listOptionsToQuery options)
         Method.methodGet
 
+-- /user/submissions
+
 getSubmissions :: FromJSON a => ApiClient -> ListOptions -> IO a
 getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
@@ -130,12 +202,16 @@ getSubmissions' client options =
         (listOptionsToQuery options)
         Method.methodGet
 
+-- /user/subusers
+
 getSubUsers :: FromJSON a => ApiClient -> IO a
 getSubUsers client = getSubUsers' client >>= simplifyIO
 
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' client =
     Core.fetchJson client (Utils.ascii "/user/subusers") [] Method.methodGet
+
+-- /user/folders
 
 getFolders :: FromJSON a => ApiClient -> IO a
 getFolders client = getFolders' client >>= simplifyIO
@@ -144,12 +220,16 @@ getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' client =
     Core.fetchJson client (Utils.ascii "/user/folders") [] Method.methodGet
 
+-- /user/reports
+
 getReports :: FromJSON a => ApiClient -> IO a
 getReports client = getReports' client >>= simplifyIO
 
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' client =
     Core.fetchJson client (Utils.ascii "/user/reports") [] Method.methodGet
+
+-- /user/settings
 
 getSettings :: FromJSON a => ApiClient -> IO a
 getSettings client = getSettings' client >>= simplifyIO
