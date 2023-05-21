@@ -15,6 +15,7 @@ import           Text.Printf            -- base
 
 main :: IO ()
 main = do
+    -- if account is in EU safe mode, use 'JF.defaultApiClientEu' instead
     client <- JF.defaultApiClient "YOUR API KEY"
     forms :: [Json.Value] <- JF.getForms client JF.defaultListOptions
     for_ forms $ \form -> do
