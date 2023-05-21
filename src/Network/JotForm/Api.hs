@@ -41,12 +41,21 @@ module Network.JotForm.Api
     , updateSettings
     , updateSettings'
 
+      -- *** \/user\/history
+    , getHistory
+    , getHistory'
+
       -- * Helper Types
 
       -- ** ListOptions
     , ListOptions (..)
     , defaultListOptions
     , listOptionsToQuery
+
+      -- ** HistoryOptions
+    , HistoryOptions (..)
+    , defaultHistoryOptions
+    , historyOptionsToQuery
 
       -- ** Options
     , Options
@@ -134,6 +143,8 @@ import Network.JotForm.Utils qualified as Utils
 -- +-----------------------+------------------+------------------+-----+--------+
 -- | @\/user\/settings@    | 'getSettings'    | 'updateSettings' | -   | -      |
 -- +-----------------------+------------------+------------------+-----+--------+
+-- | @\/user\/history@     | 'getHistory'     | -                | -   | -      |
+-- +-----------------------+------------------+------------------+-----+--------+
 
 -- | A collection of key-value options.
 type Options = [(Str.ByteString, Str.ByteString)]
@@ -145,6 +156,15 @@ data ListOptions = MkListOptions
     , limit :: Maybe Int
     , filters :: Maybe Value
     , orderBy :: Maybe Str.ByteString
+    }
+    deriving (Eq, Ord, Show, Read)
+
+data HistoryOptions = MkHistoryOptions
+    { action :: Maybe Str.ByteString
+    , date :: Maybe Str.ByteString
+    , sortBy :: Maybe Str.ByteString
+    , startDate :: Maybe Str.ByteString
+    , endDate :: Maybe Str.ByteString
     }
     deriving (Eq, Ord, Show, Read)
 
@@ -180,6 +200,34 @@ listOptionsToQuery options = do
 -- end users will normally need, but provided just in case.
 optionsToQuery :: Options -> Query
 optionsToQuery = URI.simpleQueryToQuery
+
+historyOptionsToQuery :: HistoryOptions -> Query
+historyOptionsToQuery options = do
+    (key, mVal) <- keys `zip` vals
+    case mVal of
+        Nothing -> empty
+        Just val -> pure (key, Just val)
+  where
+    keys = Utils.ascii <$> ["action", "date", "sortBy", "startDate", "endDate"]
+    vals =
+        [ action options
+        , date options
+        , sortBy options
+        , startDate options
+        , endDate options
+        ]
+
+-- | A default 'HistoryOptions' value; it simply sets 'Nothing' as the
+-- value of each option, so that none of these options is specified.
+defaultHistoryOptions :: HistoryOptions
+defaultHistoryOptions =
+    MkHistoryOptions
+        { action = Nothing
+        , date = Nothing
+        , sortBy = Nothing
+        , startDate = Nothing
+        , endDate = Nothing
+        }
 
 -- | Pull out the "content" field from a response body and return it.
 simplify :: FromJSON a => Response Value -> Either String a
@@ -289,3 +337,16 @@ updateSettings' client options =
         (Utils.ascii "/user/settings")
         (optionsToQuery options)
         Method.methodPost
+
+-- /user/history
+
+getHistory :: FromJSON a => ApiClient -> HistoryOptions -> IO a
+getHistory client options = getHistory' client options >>= simplifyIO
+
+getHistory' :: FromJSON a => ApiClient -> HistoryOptions -> IO (Response a)
+getHistory' client options =
+    Core.fetchJson
+        client
+        (Utils.ascii "/user/history")
+        (historyOptionsToQuery options)
+        Method.methodGet
