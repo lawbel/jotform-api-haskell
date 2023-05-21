@@ -141,10 +141,10 @@ fetchJson client path query method = do
 -- | Properly handles the methods needed by the JotForm API, which at time
 -- of writing are:
 --
--- * 'Method.methodGet'
--- * 'Method.methodPost'
--- * 'Method.methodDelete'
--- * 'Method.methodPut'
+-- * 'Method.methodGet' (GET)
+-- * 'Method.methodPost' (POST)
+-- * 'Method.methodDelete' (DELETE)
+-- * 'Method.methodPut' (PUT)
 toRequest :: ApiClient -> Path -> Query -> Method -> Request
 toRequest client path query method =
     defaultSecureRequest
