@@ -2,6 +2,8 @@ module Network.JotForm.Api
     ( ListOptions (..)
     , defaultListOptions
     , listOptionsToQuery
+    , Options
+    , optionsToQuery
     , getUser
     , getUser'
     , getUsage
@@ -18,6 +20,8 @@ module Network.JotForm.Api
     , getReports'
     , getSettings
     , getSettings'
+    , updateSettings
+    , updateSettings'
     ) where
 
 import Control.Applicative (empty)
@@ -31,9 +35,12 @@ import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Types (Query)
 import Network.HTTP.Types.Method qualified as Method
+import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
+
+type Options = [(Str.ByteString, Str.ByteString)]
 
 data ListOptions = MkListOptions
     { offset :: Maybe Int
@@ -66,6 +73,9 @@ listOptionsToQuery options = do
         , Utils.encodeStrict <$> filters options
         , orderBy options
         ]
+
+optionsToQuery :: Options -> Query
+optionsToQuery = URI.simpleQueryToQuery
 
 -- | Pull out the "content" field from a response body and return it.
 simplify :: FromJSON a => Response Value -> Either String a
@@ -147,3 +157,15 @@ getSettings client = getSettings' client >>= simplifyIO
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' client =
     Core.fetchJson client (Utils.ascii "/user/settings") [] Method.methodGet
+
+updateSettings :: FromJSON a => ApiClient -> Options -> IO a
+updateSettings client options =
+    updateSettings' client options >>= simplifyIO
+
+updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
+updateSettings' client options =
+    Core.fetchJson
+        client
+        (Utils.ascii "/user/settings")
+        (optionsToQuery options)
+        Method.methodPost
