@@ -40,7 +40,7 @@ submissionAndFormFilters :: ApiClient -> IO ()
 submissionAndFormFilters client = do
     let submissionFilter =
             Json.object
-                [ "created_at:gt" .= ("2000-01-01 00:00:00" :: String)
+                [ "created_at:gt" .= ("2020-02-20" :: String)
                 ]
     submissions :: [Value] <-
         JotForm.getSubmissions client $

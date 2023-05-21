@@ -44,7 +44,7 @@ main = do
         Byte.putStrLn $ encodePretty sub
 ```
 
-Submission and form filter examples:
+Get submissions/forms matching a filter:
 
 ```haskell
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
@@ -56,7 +56,7 @@ main = do
     client <- JF.defaultApiClient "YOUR API KEY"
 
     let submissionFilter = object
-            [ "created_at:gt" .= ("DATE" :: String) ]
+            [ "created_at:gt" .= ("2020-02-20" :: String) ]
     submissions :: [Value] <- JF.getSubmissions client $
         JF.defaultListOptions { JF.filters = Just submissionFilter }
     print submissions
