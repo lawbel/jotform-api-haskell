@@ -1,20 +1,45 @@
 module Network.JotForm.Core
-    ( ApiClient (..)
-    , BaseUrl (..)
-    , OutputType (..)
-    , DebugMode (..)
-    , Path
-    , ApiKey
-    , JsonException (..)
-    , userAgent
+    ( -- * API Client
+      ApiClient (..)
+
+      -- ** Defaults
     , defaultApiClient
     , defaultApiClient'
+
+      -- ** EU Defaults
     , defaultApiClientEu
     , defaultApiClientEu'
-    , baseUrlToString
+
+      -- * Core Functionality
     , fetch
     , fetchJson
     , toRequest
+
+      -- * Other Types
+
+      -- ** BaseUrl
+    , BaseUrl (..)
+    , baseUrlToString
+
+      -- ** OutputType
+    , OutputType (..)
+
+      -- ** DebugMode
+    , DebugMode (..)
+
+      -- ** Path
+    , Path
+
+      -- ** ApiKey
+    , ApiKey
+
+      -- * Exceptions
+
+      -- ** JsonException
+    , JsonException (..)
+
+      -- * Constants
+    , userAgent
     ) where
 
 import Control.Exception (Exception, throwIO)
