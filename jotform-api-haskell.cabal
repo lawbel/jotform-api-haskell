@@ -52,6 +52,5 @@ test-suite examples
         , aeson-optics ^>=1.2.0.1
         , aeson-pretty ^>=0.8.9
         , optics-core ^>=0.4.1
-        , text ^>=1.2.5.0
         , bytestring
         , jotform-api-haskell
