@@ -5,15 +5,15 @@ import Control.Applicative ((<|>))
 import Data.Aeson (ToJSON, Value, (.=))
 import Data.Aeson qualified as Json
 import Data.Aeson.Encode.Pretty qualified as Json.Pretty
-import Data.Aeson.Optics (key, _String)
+import Data.Aeson.Optics (key, _Integer, _String)
 import Data.ByteString qualified as Byte.Str
 import Data.ByteString.Char8 qualified as Byte.Str.Char8
 import Data.ByteString.Lazy.Char8 qualified as Byte.Lazy.Char8
 import Data.Foldable (for_)
-import Data.Text.IO qualified as Text.IO
 import Network.JotForm (ApiClient, ApiKey)
 import Network.JotForm qualified as JotForm
 import Optics.Core ((%), (^?))
+import Text.Printf (printf)
 
 putJsonPretty :: ToJSON a => a -> IO ()
 putJsonPretty = Byte.Lazy.Char8.putStrLn . Json.Pretty.encodePretty
@@ -23,7 +23,15 @@ getForms client = do
     forms :: [Value] <- JotForm.getForms client JotForm.defaultListOptions
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
-        Text.IO.putStrLn $ maybe "null" id title
+        let total = form ^? key "count" % _String % _Integer
+        let new = form ^? key "new" % _String % _Integer
+        printf
+            "%s (total: %d, new: %d)\n"
+            (title `orElse` "null")
+            (total `orElse` 0)
+            (new `orElse` 0)
+  where
+    val `orElse` def = maybe def id val
 
 getLatestSubmissions :: ApiClient -> IO ()
 getLatestSubmissions client = do
@@ -84,4 +92,5 @@ main = do
     examples =
         [ getForms
         , getLatestSubmissions
+        , submissionAndFormFilters
         ]

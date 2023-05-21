@@ -8,10 +8,10 @@ Print all forms of the user:
 {-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 import qualified Data.Aeson as Json     -- aeson
 import           Data.Aeson.Optics      -- aeson-optics
-import           Data.Foldable (for_)   -- base
-import qualified Data.Text.IO as Text   -- text
+import           Data.Foldable          -- base
 import qualified Network.JotForm as JF  -- jotform-api-haskell
 import           Optics.Core            -- optics-core
+import           Text.Printf            -- base
 
 main :: IO ()
 main = do
@@ -19,7 +19,14 @@ main = do
     forms :: [Json.Value] <- JF.getForms client JF.defaultListOptions
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
-        Text.putStrLn $ maybe "null" id title
+        let total = form ^? key "count" % _String % _Integer
+        let new   = form ^? key "new"   % _String % _Integer
+        printf "%s (total: %d, new: %d)\n"
+            (title `orElse` "null")
+            (total `orElse` 0)
+            (new   `orElse` 0)
+  where
+    value `orElse` def = maybe def id value
 ```
 
 Get latest 100 submissions ordered by creation date:
@@ -29,7 +36,7 @@ Get latest 100 submissions ordered by creation date:
 import qualified Data.Aeson as Json                  -- aeson
 import           Data.Aeson.Encode.Pretty            -- aeson-pretty
 import qualified Data.ByteString.Lazy.Char8 as Byte  -- bytestring
-import           Data.Foldable (for_)                -- base
+import           Data.Foldable                       -- base
 import qualified Network.JotForm as JF               -- jotform-api-haskell
 
 main :: IO ()
