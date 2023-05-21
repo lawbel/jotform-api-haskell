@@ -295,7 +295,8 @@ getUser client = getUser' client >>= simplifyIO
 
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' client =
-    Core.fetchJson client (Utils.ascii "/user") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user") Method.methodGet
 
 -- /user/usage
 
@@ -304,7 +305,8 @@ getUsage client = getUsage' client >>= simplifyIO
 
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
-    Core.fetchJson client (Utils.ascii "/user/usage") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user/usage") Method.methodGet
 
 -- /user/forms
 
@@ -313,11 +315,14 @@ getForms client options = getForms' client options >>= simplifyIO
 
 getForms' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getForms' client options =
-    Core.fetchJson
-        client
-        (Utils.ascii "/user/forms")
-        (listOptionsToQuery options)
-        Method.methodGet
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii "/user/forms"
+            , Core.query = listOptionsToQuery options
+            , Core.body = Byte.Str.empty
+            , Core.headers = []
+            , Core.method = Method.methodGet
+            }
 
 -- /user/submissions
 
@@ -326,11 +331,14 @@ getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
 getSubmissions' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getSubmissions' client options =
-    Core.fetchJson
-        client
-        (Utils.ascii "/user/submissions")
-        (listOptionsToQuery options)
-        Method.methodGet
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii "/user/submissions"
+            , Core.query = listOptionsToQuery options
+            , Core.body = Byte.Str.empty
+            , Core.headers = []
+            , Core.method = Method.methodGet
+            }
 
 -- /user/subusers
 
@@ -339,7 +347,8 @@ getSubUsers client = getSubUsers' client >>= simplifyIO
 
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' client =
-    Core.fetchJson client (Utils.ascii "/user/subusers") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user/subusers") Method.methodGet
 
 -- /user/folders
 
@@ -348,7 +357,8 @@ getFolders client = getFolders' client >>= simplifyIO
 
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' client =
-    Core.fetchJson client (Utils.ascii "/user/folders") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user/folders") Method.methodGet
 
 -- /user/reports
 
@@ -357,7 +367,8 @@ getReports client = getReports' client >>= simplifyIO
 
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' client =
-    Core.fetchJson client (Utils.ascii "/user/reports") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user/reports") Method.methodGet
 
 -- /user/settings
 
@@ -366,7 +377,8 @@ getSettings client = getSettings' client >>= simplifyIO
 
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' client =
-    Core.fetchJson client (Utils.ascii "/user/settings") [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii "/user/settings") Method.methodGet
 
 updateSettings :: FromJSON a => ApiClient -> Options -> IO a
 updateSettings client options =
@@ -374,11 +386,14 @@ updateSettings client options =
 
 updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
 updateSettings' client options =
-    Core.fetchJson
-        client
-        (Utils.ascii "/user/settings")
-        (optionsToQuery options)
-        Method.methodPost
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii "/user/settings"
+            , Core.query = []
+            , Core.body = URI.renderQuery False $ optionsToQuery options
+            , Core.headers = [Core.urlEncode]
+            , Core.method = Method.methodPost
+            }
 
 -- /user/history
 
@@ -387,11 +402,14 @@ getHistory client options = getHistory' client options >>= simplifyIO
 
 getHistory' :: FromJSON a => ApiClient -> HistoryOptions -> IO (Response a)
 getHistory' client options =
-    Core.fetchJson
-        client
-        (Utils.ascii "/user/history")
-        (historyOptionsToQuery options)
-        Method.methodGet
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii "/user/history"
+            , Core.query = historyOptionsToQuery options
+            , Core.body = Byte.Str.empty
+            , Core.headers = []
+            , Core.method = Method.methodGet
+            }
 
 -- /form/{id}
 
@@ -400,11 +418,10 @@ getForm client formId = getForm' client formId >>= simplifyIO
 
 getForm' :: FromJSON a => ApiClient -> String -> IO (Response a)
 getForm' client formId =
-    Core.fetchJson
-        client
-        (Utils.ascii $ "/form/" <> formId)
-        []
-        Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii path) Method.methodGet
+  where
+    path = "/form/" <> formId
 
 -- /form/{id}/questions
 
@@ -413,7 +430,8 @@ getFormQuestions client formId = getFormQuestions' client formId >>= simplifyIO
 
 getFormQuestions' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
 getFormQuestions' client formId =
-    Core.fetchJson client (Utils.ascii path) [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii path) Method.methodGet
   where
     path = "/form/" <> unFormId formId <> "/questions"
 
@@ -427,6 +445,7 @@ getFormQuestion client formId qId =
 getFormQuestion'
     :: FromJSON a => ApiClient -> FormId -> QuestionId -> IO (Response a)
 getFormQuestion' client formId qId =
-    Core.fetchJson client (Utils.ascii path) [] Method.methodGet
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii path) Method.methodGet
   where
     path = "/form/" <> unFormId formId <> "/question/" <> unQuestionId qId

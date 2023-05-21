@@ -15,6 +15,10 @@ module Network.JotForm.Core
     , fetchJson
     , toRequest
 
+      -- ** Parameters
+    , Params (..)
+    , defaultParams
+
       -- * Other Types
 
       -- ** BaseUrl
@@ -40,6 +44,10 @@ module Network.JotForm.Core
 
       -- * Constants
     , userAgent
+
+      -- * Headers
+    , urlEncode
+    , acceptJson
     ) where
 
 import Control.Exception (Exception, throwIO)
@@ -52,9 +60,8 @@ import Data.ByteString.Lazy qualified as Lazy (ByteString)
 import Network.HTTP.Client (Manager, Request, Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
-import Network.HTTP.Types (Method, Query)
+import Network.HTTP.Types (Header, Method, Query)
 import Network.HTTP.Types.Header qualified as Header
-import Network.HTTP.Types.Method qualified as Method
 import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Utils qualified as Utils
 
@@ -84,6 +91,25 @@ data ApiClient = MkApiClient
     , debugMode :: DebugMode
     , httpManager :: Manager
     }
+
+data Params = MkParams
+    { path :: Path
+    , query :: Query
+    , body :: Str.ByteString
+    , headers :: [Header]
+    , method :: Method
+    }
+    deriving (Eq, Ord, Read, Show)
+
+defaultParams :: Path -> Method -> Params
+defaultParams thisPath thisMethod =
+    MkParams
+        { path = thisPath
+        , query = []
+        , body = Byte.Str.empty
+        , headers = []
+        , method = thisMethod
+        }
 
 -- | The User-Agent which is used for all the requests made to JotForm.
 userAgent :: Str.ByteString
@@ -137,31 +163,21 @@ baseUrlToString = \case
     DefaultBaseUrl -> Utils.ascii "api.jotform.com"
     EuBaseUrl -> Utils.ascii "eu-api.jotform.com"
 
-fetch
-    :: ApiClient
-    -> Path
-    -> Query
-    -> Method
-    -> IO (Response Lazy.ByteString)
-fetch client path query method =
-    Client.httpLbs (toRequest client path query method) (httpManager client)
+fetch :: ApiClient -> Params -> IO (Response Lazy.ByteString)
+fetch client params = Client.httpLbs request manager
+  where
+    request = toRequest client params
+    manager = httpManager client
 
-fetchJson
-    :: FromJSON a
-    => ApiClient
-    -> Path
-    -> Query
-    -> Method
-    -> IO (Response a)
-fetchJson client path query method = do
+fetchJson :: FromJSON a => ApiClient -> Params -> IO (Response a)
+fetchJson client params = do
     response <- Client.httpLbs requestJson (httpManager client)
     case Json.eitherDecode $ Client.responseBody response of
         Left err -> throwIO $ MkJsonException err
         Right json -> pure (json <$ response)
   where
-    request = toRequest client path query method
+    request = toRequest client params
     requestJson = Utils.updateHeaders (acceptJson :) request
-    acceptJson = (Header.hAccept, Utils.ascii "application/json")
 
 -- | Properly handles the methods needed by the JotForm API, which at time
 -- of writing are:
@@ -170,27 +186,27 @@ fetchJson client path query method = do
 -- * 'Method.methodPost' (POST)
 -- * 'Method.methodDelete' (DELETE)
 -- * 'Method.methodPut' (PUT)
-toRequest :: ApiClient -> Path -> Query -> Method -> Request
-toRequest client path query method =
+toRequest :: ApiClient -> Params -> Request
+toRequest client params =
     defaultSecureRequest
         { Client.host = baseUrlToString $ baseUrl client
-        , Client.path = versionPath <> path <> outputPath
-        , Client.method = method
-        , Client.queryString = queryStrIf $ method == Method.methodGet
-        , Client.requestBody = Client.RequestBodyBS $ queryStrIf isPostOrPut
-        , Client.requestHeaders =
-            addUrlEncHeader
-                [ (Utils.headerName "ApiKey", apiKey client)
-                , (Header.hUserAgent, userAgent)
-                ]
+        , Client.path = versionPath <> path params <> outputPath
+        , Client.method = method params
+        , Client.queryString = URI.renderQuery False (query params)
+        , Client.requestBody = Client.RequestBodyBS $ body params
+        , Client.requestHeaders = headers params <> defHeaders
         }
   where
-    isPostOrPut = method `elem` [Method.methodPost, Method.methodPut]
     versionPath = Byte.Str.Char8.cons '/' $ apiVersion client
-    outputPath = case outputType client of
-        JsonOutput -> Byte.Str.empty
-    queryStrIf test =
-        if test then URI.renderQuery False query else Byte.Str.empty
-    addUrlEncHeader = if isPostOrPut then (urlEncHeader :) else id
-    urlEncHeader = (Header.hContentType, Utils.ascii urlEnc)
-    urlEnc = "application/x-www-form-urlencoded"
+    outputPath = case outputType client of JsonOutput -> Byte.Str.empty
+    defHeaders =
+        [ (Utils.headerName "ApiKey", apiKey client)
+        , (Header.hUserAgent, userAgent)
+        ]
+
+urlEncode :: Header
+urlEncode =
+    (Header.hContentType, Utils.ascii "application/x-www-form-urlencoded")
+
+acceptJson :: Header
+acceptJson = (Header.hAccept, Utils.ascii "application/json")
