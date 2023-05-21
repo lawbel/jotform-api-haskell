@@ -61,6 +61,14 @@ module Network.JotForm.Api
     , getFormQuestion
     , getFormQuestion'
 
+      -- *** \/form\/{id}\/submissions
+    , getFormSubmissions
+    , getFormSubmissions'
+    , createFormSubmission
+    , createFormSubmission'
+    , createFormSubmissions
+    , createFormSubmissions'
+
       -- * Helper Types
 
       -- ** ListOptions
@@ -90,7 +98,9 @@ import Data.Aeson (FromJSON, Value)
 import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
+import Data.ByteString qualified as Byte.Str
 import Data.ByteString qualified as Str (ByteString)
+import Data.ByteString.Char8 qualified as Byte.Str.Char8
 import Data.HashMap.Strict qualified as HashMap.Str
 import Data.HashMap.Strict qualified as Str (HashMap)
 import Data.String (IsString)
@@ -149,33 +159,35 @@ import Network.JotForm.Utils qualified as Utils
 --
 -- Below is a table summarizing the API functions available.
 --
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | Endpoint \\ Method              | GET                | POST             | PUT | DELETE |
--- +=================================+====================+==================+=====+========+
--- | @\/user@                        | 'getUser'          | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/usage@                 | 'getUsage'         | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/forms@                 | 'getForms'         | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/submissions@           | 'getSubmissions'   | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/subusers@              | 'getSubUsers'      | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/folders@               | 'getFolders'       | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/reports@               | 'getReports'       | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/settings@              | 'getSettings'      | 'updateSettings' | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/user\/history@               | 'getHistory'       | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/form\/{id}@                  | 'getForm'          | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/form\/{id}\/questions@       | 'getFormQuestions' | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
--- | @\/form\/{id}\/question\/{qid}@ | 'getFormQuestion'  | -                | -   | -      |
--- +---------------------------------+--------------------+------------------+-----+--------+
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | Endpoint \\ Method              | GET                  | POST                   | PUT                     | DELETE |
+-- +=================================+======================+========================+=========================+========+
+-- | @\/user@                        | 'getUser'            | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/usage@                 | 'getUsage'           | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/forms@                 | 'getForms'           | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/submissions@           | 'getSubmissions'     | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/subusers@              | 'getSubUsers'        | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/folders@               | 'getFolders'         | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/reports@               | 'getReports'         | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/settings@              | 'getSettings'        | 'updateSettings'       | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/user\/history@               | 'getHistory'         | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}@                  | 'getForm'            | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}\/questions@       | 'getFormQuestions'   | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}\/question\/{qid}@ | 'getFormQuestion'    | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}\/submissions@     | 'getFormSubmissions' | 'createFormSubmission' | 'createFormSubmissions' | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
 
 -- | A collection of key-value options.
 newtype Options = MkOptions
@@ -457,3 +469,77 @@ getFormQuestion' client formId qId =
         Core.defaultParams (Utils.ascii path) Method.methodGet
   where
     path = "/form/" <> unFormId formId <> "/question/" <> unQuestionId qId
+
+-- /form/{id}/submissions
+
+getFormSubmissions
+    :: FromJSON a => ApiClient -> FormId -> ListOptions -> IO a
+getFormSubmissions client formId options =
+    getFormSubmissions' client formId options >>= simplifyIO
+
+getFormSubmissions'
+    :: FromJSON a => ApiClient -> FormId -> ListOptions -> IO (Response a)
+getFormSubmissions' client formId options =
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii path
+            , Core.query = listOptionsToQuery options
+            , Core.body = Byte.Str.empty
+            , Core.headers = []
+            , Core.method = Method.methodGet
+            }
+  where
+    path = "/form/" <> unFormId formId <> "/submissions"
+
+createFormSubmission
+    :: FromJSON a => ApiClient -> FormId -> Options -> IO a
+createFormSubmission client formId submission =
+    createFormSubmission' client formId submission >>= simplifyIO
+
+createFormSubmission'
+    :: FromJSON a => ApiClient -> FormId -> Options -> IO (Response a)
+createFormSubmission' client formId submission =
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii path
+            , Core.query = []
+            , Core.body = URI.renderQuery False query
+            , Core.headers = [Core.urlEncode]
+            , Core.method = Method.methodPost
+            }
+  where
+    query = optionsToQuery $ mapKeys submission
+    mapKeys = MkOptions . HashMap.Str.mapKeys questionName . unOptions
+    path = "/form/" <> unFormId formId <> "/submissions"
+
+questionName :: Str.ByteString -> Str.ByteString
+questionName field = case Byte.Str.Char8.elemIndex '_' field of
+    Just i ->
+        let (left, right) = Byte.Str.Char8.splitAt i field
+        in  mconcat
+                [ Utils.ascii "submission["
+                , left
+                , Utils.ascii "]["
+                , Byte.Str.Char8.drop 1 right
+                , Utils.ascii "]"
+                ]
+    Nothing -> Utils.ascii "submission[" <> field <> Utils.ascii "]"
+
+createFormSubmissions
+    :: FromJSON a => ApiClient -> FormId -> Value -> IO a
+createFormSubmissions client formId submissions =
+    createFormSubmissions' client formId submissions >>= simplifyIO
+
+createFormSubmissions'
+    :: FromJSON a => ApiClient -> FormId -> Value -> IO (Response a)
+createFormSubmissions' client formId submissions =
+    Core.fetchJson client $
+        Core.MkParams
+            { Core.path = Utils.ascii path
+            , Core.query = []
+            , Core.body = Utils.encodeStrict submissions
+            , Core.headers = []
+            , Core.method = Method.methodPut
+            }
+  where
+    path = "/form/" <> unFormId formId <> "/submissions"
