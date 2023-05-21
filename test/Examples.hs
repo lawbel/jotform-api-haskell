@@ -79,5 +79,9 @@ getClientFrom fileName mkClient = do
 main :: IO ()
 main = do
     client <- getClient
-    getForms client
-    getLatestSubmissions client
+    for_ examples $ \ex -> ex client
+  where
+    examples =
+        [ getForms
+        , getLatestSubmissions
+        ]
