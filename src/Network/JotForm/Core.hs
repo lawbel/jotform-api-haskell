@@ -44,7 +44,7 @@ type ApiKey = Str.ByteString
 data BaseUrl = DefaultBaseUrl | EuBaseUrl
     deriving (Bounded, Enum, Eq, Ord, Show, Read)
 
-data OutputType = JsonOutput | XmlOutput
+data OutputType = JsonOutput
     deriving (Bounded, Enum, Eq, Ord, Show, Read)
 
 data DebugMode = DebugOn | DebugOff
@@ -153,4 +153,3 @@ toRequest client path query method =
     versionPath = Byte.Str.Char8.cons '/' $ apiVersion client
     outputPath = case outputType client of
         JsonOutput -> Byte.Str.empty
-        XmlOutput -> Utils.ascii ".xml"
