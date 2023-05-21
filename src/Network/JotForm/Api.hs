@@ -4,7 +4,7 @@ module Network.JotForm.Api
     ( -- * Functions Provided
       -- $intro
 
-      -- * Table Overview
+      -- ** Table Overview
       -- $summary
 
       -- * API Endpoints
@@ -147,7 +147,7 @@ import Network.JotForm.Utils qualified as Utils
 
 -- $summary
 --
--- Below is a table summary of the API functions available.
+-- Below is a table summarizing the API functions available.
 --
 -- +---------------------------------+--------------------+------------------+-----+--------+
 -- | Endpoint \\ Method              | GET                | POST             | PUT | DELETE |
