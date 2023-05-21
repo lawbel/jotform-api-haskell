@@ -74,7 +74,7 @@ module Network.JotForm.Api
     , historyOptionsToQuery
 
       -- ** Options
-    , Options
+    , Options (..)
     , optionsToQuery
 
       -- ** FormId
@@ -91,6 +91,8 @@ import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.ByteString qualified as Str (ByteString)
+import Data.HashMap.Strict qualified as HashMap.Str
+import Data.HashMap.Strict qualified as Str (HashMap)
 import Data.String (IsString)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
@@ -176,7 +178,10 @@ import Network.JotForm.Utils qualified as Utils
 -- +---------------------------------+--------------------+------------------+-----+--------+
 
 -- | A collection of key-value options.
-type Options = [(Str.ByteString, Str.ByteString)]
+newtype Options = MkOptions
+    { unOptions :: Str.HashMap Str.ByteString Str.ByteString
+    }
+    deriving (Eq, Ord, Show, Read)
 
 newtype FormId = MkFormId {unFormId :: String}
     deriving (Eq, Ord, Show, Read)
@@ -236,7 +241,7 @@ listOptionsToQuery options = do
 -- | Conversion function from 'Options' to 'Query' - not something that
 -- end users will normally need, but provided just in case.
 optionsToQuery :: Options -> Query
-optionsToQuery = URI.simpleQueryToQuery
+optionsToQuery = URI.simpleQueryToQuery . HashMap.Str.toList . unOptions
 
 historyOptionsToQuery :: HistoryOptions -> Query
 historyOptionsToQuery options = do
