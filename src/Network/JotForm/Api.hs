@@ -1,3 +1,5 @@
+{-# LANGUAGE DerivingVia #-}
+
 module Network.JotForm.Api
     ( -- * Functions Provided
       -- $intro
@@ -45,6 +47,20 @@ module Network.JotForm.Api
     , getHistory
     , getHistory'
 
+      -- ** \/form
+
+      -- *** \/form\/{id}
+    , getForm
+    , getForm'
+
+      -- *** \/form\/{id}\/questions
+    , getFormQuestions
+    , getFormQuestions'
+
+      -- *** \/form\/{id}\/question\/{qid}
+    , getFormQuestion
+    , getFormQuestion'
+
       -- * Helper Types
 
       -- ** ListOptions
@@ -60,6 +76,12 @@ module Network.JotForm.Api
       -- ** Options
     , Options
     , optionsToQuery
+
+      -- ** FormId
+    , FormId (..)
+
+      -- ** QuestionId
+    , QuestionId (..)
     ) where
 
 import Control.Applicative (empty)
@@ -69,6 +91,7 @@ import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.ByteString qualified as Str (ByteString)
+import Data.String (IsString)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Types (Query)
@@ -124,30 +147,44 @@ import Network.JotForm.Utils qualified as Utils
 --
 -- Below is a table summary of the API functions available.
 --
--- +-----------------------+------------------+------------------+-----+--------+
--- | Endpoint \\ Method    | GET              | POST             | PUT | DELETE |
--- +=======================+==================+==================+=====+========+
--- | @\/user@              | 'getUser'        | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/usage@       | 'getUsage'       | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/forms@       | 'getForms'       | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/submissions@ | 'getSubmissions' | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/subusers@    | 'getSubUsers'    | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/folders@     | 'getFolders'     | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/reports@     | 'getReports'     | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/settings@    | 'getSettings'    | 'updateSettings' | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
--- | @\/user\/history@     | 'getHistory'     | -                | -   | -      |
--- +-----------------------+------------------+------------------+-----+--------+
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | Endpoint \\ Method              | GET                | POST             | PUT | DELETE |
+-- +=================================+====================+==================+=====+========+
+-- | @\/user@                        | 'getUser'          | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/usage@                 | 'getUsage'         | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/forms@                 | 'getForms'         | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/submissions@           | 'getSubmissions'   | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/subusers@              | 'getSubUsers'      | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/folders@               | 'getFolders'       | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/reports@               | 'getReports'       | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/settings@              | 'getSettings'      | 'updateSettings' | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/user\/history@               | 'getHistory'       | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/form\/{id}@                  | 'getForm'          | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/form\/{id}\/questions@       | 'getFormQuestions' | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
+-- | @\/form\/{id}\/question\/{qid}@ | 'getFormQuestion'  | -                | -   | -      |
+-- +---------------------------------+--------------------+------------------+-----+--------+
 
 -- | A collection of key-value options.
 type Options = [(Str.ByteString, Str.ByteString)]
+
+newtype FormId = MkFormId {unFormId :: String}
+    deriving (Eq, Ord, Show, Read)
+    deriving (IsString, Semigroup, Monoid) via String
+
+newtype QuestionId = MkQuestionId {unQuestionId :: String}
+    deriving (Eq, Ord, Show, Read)
+    deriving (IsString, Semigroup, Monoid) via String
 
 -- | A bundle of options that are re-used in a couple of places in the API
 -- where it can potentially return a (very) long list of values.
@@ -350,3 +387,41 @@ getHistory' client options =
         (Utils.ascii "/user/history")
         (historyOptionsToQuery options)
         Method.methodGet
+
+-- /form/{id}
+
+getForm :: FromJSON a => ApiClient -> String -> IO a
+getForm client formId = getForm' client formId >>= simplifyIO
+
+getForm' :: FromJSON a => ApiClient -> String -> IO (Response a)
+getForm' client formId =
+    Core.fetchJson
+        client
+        (Utils.ascii $ "/form/" <> formId)
+        []
+        Method.methodGet
+
+-- /form/{id}/questions
+
+getFormQuestions :: FromJSON a => ApiClient -> FormId -> IO a
+getFormQuestions client formId = getFormQuestions' client formId >>= simplifyIO
+
+getFormQuestions' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormQuestions' client formId =
+    Core.fetchJson client (Utils.ascii path) [] Method.methodGet
+  where
+    path = "/form/" <> unFormId formId <> "/questions"
+
+-- /form/{id}/question/{qid}
+
+getFormQuestion
+    :: FromJSON a => ApiClient -> FormId -> QuestionId -> IO a
+getFormQuestion client formId qId =
+    getFormQuestion' client formId qId >>= simplifyIO
+
+getFormQuestion'
+    :: FromJSON a => ApiClient -> FormId -> QuestionId -> IO (Response a)
+getFormQuestion' client formId qId =
+    Core.fetchJson client (Utils.ascii path) [] Method.methodGet
+  where
+    path = "/form/" <> unFormId formId <> "/question/" <> unQuestionId qId
