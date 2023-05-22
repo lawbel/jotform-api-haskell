@@ -433,15 +433,15 @@ getHistory' client options =
 
 -- /form/{id}
 
-getForm :: FromJSON a => ApiClient -> String -> IO a
+getForm :: FromJSON a => ApiClient -> FormId -> IO a
 getForm client formId = getForm' client formId >>= simplifyIO
 
-getForm' :: FromJSON a => ApiClient -> String -> IO (Response a)
+getForm' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
 getForm' client formId =
     Core.fetchJson client $
         Core.defaultParams (Utils.ascii path) Method.methodGet
   where
-    path = "/form/" <> formId
+    path = "/form/" <> unFormId formId
 
 -- /form/{id}/questions
 
