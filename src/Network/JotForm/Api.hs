@@ -1,7 +1,7 @@
 {-# LANGUAGE DerivingVia #-}
 
 module Network.JotForm.Api
-    ( -- * Functions Provided
+    ( -- * Functions Provided #functions#
       -- $intro
 
       -- ** Table Overview
@@ -10,57 +10,59 @@ module Network.JotForm.Api
       -- * API Endpoints
 
       -- ** \/user
+
+      -- | [GET \/user](https://api.jotform.com/docs/#user)
       getUser
     , getUser'
 
       -- *** \/usage
 
-      -- | GET \/user\/usage
+      -- | [GET \/user\/usage](https://api.jotform.com/docs/#user-usage)
     , getUsage
     , getUsage'
 
       -- *** \/forms
 
-      -- | GET \/user\/forms
+      -- | [GET \/user\/forms](https://api.jotform.com/docs/#user-usage)
     , getForms
     , getForms'
 
       -- *** \/submissions
 
-      -- | GET \/user\/submissions
+      -- | [GET \/user\/submissions](https://api.jotform.com/docs/#user-submissions)
     , getSubmissions
     , getSubmissions'
 
       -- *** \/subusers
 
-      -- | GET \/user\/subusers
+      -- | [GET \/user\/subusers](https://api.jotform.com/docs/#user-subusers)
     , getSubUsers
     , getSubUsers'
 
       -- *** \/folders
 
-      -- | GET \/user\/folders
+      -- | [GET \/user\/folders](https://api.jotform.com/docs/#user-folders)
     , getFolders
     , getFolders'
 
       -- *** \/reports
 
-      -- | GET \/user\/reports
+      -- | [GET \/user\/reports](https://api.jotform.com/docs/#user-reports)
     , getReports
     , getReports'
 
       -- *** \/settings
 
-      -- | GET \/user\/settings
+      -- | [GET \/user\/settings](https://api.jotform.com/docs/#user-settings)
     , getSettings
     , getSettings'
-      -- | POST \/user\/settings
+      -- | [POST \/user\/settings](https://api.jotform.com/docs/#post-user-settings)
     , updateSettings
     , updateSettings'
 
       -- *** \/history
 
-      -- | GET \/user\/history
+      -- | [GET \/user\/history](https://api.jotform.com/docs/#user-history)
     , getHistory
     , getHistory'
 
@@ -68,52 +70,52 @@ module Network.JotForm.Api
 
       -- *** \/{id}
 
-      -- | GET \/form\/{id}
+      -- | [GET \/form\/{id}](https://api.jotform.com/docs/#form-id)
     , getForm
     , getForm'
 
       -- **** \/questions
 
-      -- | GET \/form\/{id}\/questions
+      -- | [GET \/form\/{id}\/questions](https://api.jotform.com/docs/#form-id-questions)
     , getFormQuestions
     , getFormQuestions'
 
       -- **** \/question\/{qid}
 
-      -- | GET \/form\/{id}\/question\/{qid}
+      -- | [GET \/form\/{id}\/question\/{qid}](https://api.jotform.com/docs/#form-id-question-id)
     , getFormQuestion
     , getFormQuestion'
 
       -- **** \/submissions
 
-      -- | GET \/form\/{id}\/submissions
+      -- | [GET \/form\/{id}\/submissions](https://api.jotform.com/docs/#form-id-submissions)
     , getFormSubmissions
     , getFormSubmissions'
-      -- | POST \/form\/{id}\/submissions
+      -- | [POST \/form\/{id}\/submissions](https://api.jotform.com/docs/#post-form-id-submissions)
     , createFormSubmission
     , createFormSubmission'
-      -- | PUT \/form\/{id}\/submissions
+      -- | [PUT \/form\/{id}\/submissions](https://api.jotform.com/docs/#put-form-id-submissions)
     , createFormSubmissions
     , createFormSubmissions'
 
       -- **** \/files
 
-      -- | GET \/form\/{id}\/files
+      -- | [GET \/form\/{id}\/files](https://api.jotform.com/docs/#form-id-files)
     , getFormFiles
     , getFormFiles'
 
       -- **** \/webhooks
 
-      -- | GET \/form\/{id}\/webhooks
+      -- | [GET \/form\/{id}\/webhooks](https://api.jotform.com/docs/#form-id-webhooks)
     , getFormWebhooks
     , getFormWebhooks'
-      -- | POST \/form\/{id}\/webhooks
+      -- | [POST \/form\/{id}\/webhooks](https://api.jotform.com/docs/#post-form-id-webhooks)
     , createFormWebhook
     , createFormWebhook'
 
       -- ***** \/{whid}
 
-      -- | DELETE \/form\/{id}\/webhooks\/{whid}
+      -- | [DELETE \/form\/{id}\/webhooks\/{whid}](https://api.jotform.com/docs/#delete-form-id-webhooks)
     , deleteFormWebhook
     , deleteFormWebhook'
 
@@ -137,6 +139,7 @@ module Network.JotForm.Api
     , ID (..)
 
       -- *** Tags
+      -- $tags
     , Form
     , Question
     , Webhook
@@ -255,7 +258,16 @@ newtype ID ty = MkID {unID :: Str.ByteString}
     deriving (Eq, Ord, Show, Read)
     deriving (IsString, Semigroup, Monoid) via Str.ByteString
 
+-- $tags
+--
+-- These types have no constructors (like 'Data.Void.Void' from @base@), so no
+-- values can be constructed for them. They are used with 'ID' as a tag to
+-- indicate what kind of ID is expected for the arguments to various functions.
+
+-- | The \'form ID\' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getForms'.
 data Form
+
 data Question
 data Webhook
 
@@ -267,22 +279,30 @@ data Webhook
 -- * the maximum @limit@ is 1000
 data ListOptions = MkListOptions
     { offset :: Maybe Int
-    -- ^ start of each result list; useful for pagination
+    -- ^ Start of each result list; useful for pagination.
     , limit :: Maybe Int
-    -- ^ number of results in each result list
+    -- ^ Number of results in each result list.
     , filters :: Maybe Value
-    -- ^ filters the query results to fetch a specific submissions range
+    -- ^ Filters the query results to fetch a specific submissions range.
     , orderBy :: Maybe Str.ByteString
-    -- ^ order results by a field name
+    -- ^ Order results by a field name.
     }
     deriving (Eq, Ord, Show, Read)
 
+-- | A bundle of options are re-used in a couple of places in the API
+-- where it can potentially return a history/queue of some type.
 data HistoryOptions = MkHistoryOptions
     { action :: Maybe Str.ByteString
+    -- ^ Filter results by activity performed. Default is \"all\".
     , date :: Maybe Str.ByteString
+    -- ^ Limit results by a date range. If you'd like to limit results by
+    -- specific dates you can use 'startDate' and 'endDate' fields instead.
     , sortBy :: Maybe Str.ByteString
+    -- ^ Lists results by ascending and descending order.
     , startDate :: Maybe Str.ByteString
+    -- ^ Limit results to only after a specific date. Format: @MM\/DD\/YYYY@.
     , endDate :: Maybe Str.ByteString
+    -- ^ Limit results to only before a specific date. Format: @MM\/DD\/YYYY@.
     }
     deriving (Eq, Ord, Show, Read)
 
@@ -366,9 +386,21 @@ simplifyIO = either (throwIO . Core.MkJsonException) pure . simplify
 
 -- /user
 
+-- | Get user account details for a JotForm user.
+--
+-- Returns:
+--
+-- * user account type
+-- * avatar URL
+-- * name
+-- * email
+-- * website URL
+-- * account limits
 getUser :: FromJSON a => ApiClient -> IO a
 getUser client = getUser' client >>= simplifyIO
 
+-- | Non-simplified version of 'getUser' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' client =
     Core.fetchJson client $
@@ -376,9 +408,19 @@ getUser' client =
 
 -- /user/usage
 
+-- | Get number of form submissions received this month.
+--
+-- Returns:
+--
+-- * number of submissions
+-- * number of SSL form submissions
+-- * payment form submissions
+-- * upload space used by user
 getUsage :: FromJSON a => ApiClient -> IO a
 getUsage client = getUsage' client >>= simplifyIO
 
+-- | Non-simplified version of 'getUsage' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client $
@@ -386,9 +428,15 @@ getUsage' client =
 
 -- /user/forms
 
+-- | Get a list of forms for this account.
+--
+-- Returns: basic details such as title of the form, when it was created,
+-- number of new and total submissions.
 getForms :: FromJSON a => ApiClient -> ListOptions -> IO a
 getForms client options = getForms' client options >>= simplifyIO
 
+-- | Non-simplified version of 'getForms' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getForms' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getForms' client options =
     Core.fetchJson client $
@@ -402,9 +450,15 @@ getForms' client options =
 
 -- /user/submissions
 
+-- | Get a list of submissions for this account.
+--
+-- Returns: basic details such as title of the form, when it was created,
+-- number of new and total submissions.
 getSubmissions :: FromJSON a => ApiClient -> ListOptions -> IO a
 getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
+-- | Non-simplified version of 'getSubmissions' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getSubmissions' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getSubmissions' client options =
     Core.fetchJson client $
@@ -418,9 +472,14 @@ getSubmissions' client options =
 
 -- /user/subusers
 
+-- | Get a list of sub users for this account.
+--
+-- Returns: list of forms and form folders with access privileges.
 getSubUsers :: FromJSON a => ApiClient -> IO a
 getSubUsers client = getSubUsers' client >>= simplifyIO
 
+-- | Non-simplified version of 'getSubUsers' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' client =
     Core.fetchJson client $
@@ -428,9 +487,14 @@ getSubUsers' client =
 
 -- /user/folders
 
+-- | Get a list of form folders for this account.
+--
+-- Returns: name of the folder and owner of the folder for shared folders.
 getFolders :: FromJSON a => ApiClient -> IO a
 getFolders client = getFolders' client >>= simplifyIO
 
+-- | Non-simplified version of 'getFolders' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' client =
     Core.fetchJson client $
@@ -438,9 +502,15 @@ getFolders' client =
 
 -- /user/reports
 
+-- | List of URLS for reports in this account.
+--
+-- Returns: reports for all of the forms. ie. Excel, CSV, printable
+-- charts, embeddable HTML tables.
 getReports :: FromJSON a => ApiClient -> IO a
 getReports client = getReports' client >>= simplifyIO
 
+-- | Non-simplified version of 'getReports' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' client =
     Core.fetchJson client $
@@ -448,18 +518,33 @@ getReports' client =
 
 -- /user/settings
 
+-- | Get user's settings for this account.
+--
+-- Returns: user's time zone and language.
 getSettings :: FromJSON a => ApiClient -> IO a
 getSettings client = getSettings' client >>= simplifyIO
 
+-- | Non-simplified version of 'getSettings' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' client =
     Core.fetchJson client $
         Core.defaultParams (Utils.ascii "/user/settings") Method.methodGet
 
-updateSettings :: FromJSON a => ApiClient -> Options -> IO a
+-- | Update user's settings.
+--
+-- Returns: changes on user settings.
+updateSettings
+    :: FromJSON a
+    => ApiClient
+    -> Options
+    -- ^ New user settings, specified as keys and values.
+    -> IO a
 updateSettings client options =
     updateSettings' client options >>= simplifyIO
 
+-- | Non-simplified version of 'updateSettings' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
 updateSettings' client options =
     Core.fetchJson client $
@@ -473,9 +558,15 @@ updateSettings' client options =
 
 -- /user/history
 
+-- | Get user activity log.
+--
+-- Returns: activity log about things like forms created/modified/deleted,
+-- account logins and other operations.
 getHistory :: FromJSON a => ApiClient -> HistoryOptions -> IO a
 getHistory client options = getHistory' client options >>= simplifyIO
 
+-- | Non-simplified version of 'getHistory' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getHistory' :: FromJSON a => ApiClient -> HistoryOptions -> IO (Response a)
 getHistory' client options =
     Core.fetchJson client $
@@ -489,9 +580,20 @@ getHistory' client options =
 
 -- /form/{id}
 
-getForm :: FromJSON a => ApiClient -> ID Form -> IO a
+-- | Get basic information about a form.
+--
+-- Returns: form ID, status, update and creation dates, submission count etc.
+getForm
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> IO a
 getForm client formID = getForm' client formID >>= simplifyIO
 
+-- | Non-simplified version of 'getForm' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getForm' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getForm' client (MkID formID) =
     Core.fetchJson client $
@@ -501,9 +603,20 @@ getForm' client (MkID formID) =
 
 -- /form/{id}/questions
 
-getFormQuestions :: FromJSON a => ApiClient -> ID Form -> IO a
+-- | Get a list of all questions on a form.
+--
+-- Returns: question properties of a form.
+getFormQuestions
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> IO a
 getFormQuestions client formID = getFormQuestions' client formID >>= simplifyIO
 
+-- | Non-simplified version of 'getFormQuestions' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFormQuestions' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormQuestions' client (MkID formID) =
     Core.fetchJson client $
@@ -513,11 +626,24 @@ getFormQuestions' client (MkID formID) =
 
 -- /form/{id}/question/{qid}
 
+-- | Get details about a question.
+--
+-- Returns: question properties like required and validation.
 getFormQuestion
-    :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> ID Question
+    -- ^ Identifier for each question on a form. You can get a list of
+    -- question IDs from 'getFormQuestions'.
+    -> IO a
 getFormQuestion client formID qID =
     getFormQuestion' client formID qID >>= simplifyIO
 
+-- | Non-simplified version of 'getFormQuestion' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFormQuestion'
     :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO (Response a)
 getFormQuestion' client (MkID formID) (MkID qID) =
@@ -528,11 +654,22 @@ getFormQuestion' client (MkID formID) (MkID qID) =
 
 -- /form/{id}/submissions
 
+-- | List of a form submissions.
+--
+-- Returns: submissions of a specific form.
 getFormSubmissions
-    :: FromJSON a => ApiClient -> ID Form -> ListOptions -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> ListOptions
+    -> IO a
 getFormSubmissions client formID options =
     getFormSubmissions' client formID options >>= simplifyIO
 
+-- | Non-simplified version of 'getFormSubmissions' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFormSubmissions'
     :: FromJSON a => ApiClient -> ID Form -> ListOptions -> IO (Response a)
 getFormSubmissions' client (MkID formID) options =
@@ -547,11 +684,23 @@ getFormSubmissions' client (MkID formID) options =
   where
     path = Utils.ascii "/form/" <> formID <> Utils.ascii "/submissions"
 
+-- | Submit data to this form using the API.
+--
+-- Returns: posted submission ID and URL.
 createFormSubmission
-    :: FromJSON a => ApiClient -> ID Form -> Options -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> Options
+    -- ^ Submission data with question IDs.
+    -> IO a
 createFormSubmission client formID submission =
     createFormSubmission' client formID submission >>= simplifyIO
 
+-- | Non-simplified version of 'createFormSubmission' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 createFormSubmission'
     :: FromJSON a => ApiClient -> ID Form -> Options -> IO (Response a)
 createFormSubmission' client (MkID formID) submission =
@@ -581,11 +730,23 @@ questionName field = case Byte.Str.Char8.elemIndex '_' field of
                 ]
     Nothing -> Utils.ascii "submission[" <> field <> Utils.ascii "]"
 
+-- | Submit data to this form using the API.
+--
+-- Returns: posted submission ID and URL.
 createFormSubmissions
-    :: FromJSON a => ApiClient -> ID Form -> Value -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> Value
+    -- ^ Submission data with question IDs.
+    -> IO a
 createFormSubmissions client formID submissions =
     createFormSubmissions' client formID submissions >>= simplifyIO
 
+-- | Non-simplified version of 'createFormSubmissions' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 createFormSubmissions'
     :: FromJSON a => ApiClient -> ID Form -> Value -> IO (Response a)
 createFormSubmissions' client (MkID formID) submissions =
@@ -602,9 +763,20 @@ createFormSubmissions' client (MkID formID) submissions =
 
 -- /form/{id}/files
 
-getFormFiles :: FromJSON a => ApiClient -> ID Form -> IO a
+-- | List of files uploaded on a form.
+--
+-- Returns: uploaded file information and URLs on a specific form.
+getFormFiles
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> IO a
 getFormFiles client formID = getFormFiles' client formID >>= simplifyIO
 
+-- | Non-simplified version of 'getFormFiles' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFormFiles' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormFiles' client (MkID formID) =
     Core.fetchJson client $
@@ -614,9 +786,20 @@ getFormFiles' client (MkID formID) =
 
 -- /form/{id}/webhooks
 
-getFormWebhooks :: FromJSON a => ApiClient -> ID Form -> IO a
+-- | Get list of webhooks for a form.
+--
+-- Returns: list of webhooks for a specific form.
+getFormWebhooks
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> IO a
 getFormWebhooks client formID = getFormWebhooks' client formID >>= simplifyIO
 
+-- | Non-simplified version of 'getFormWebhooks' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 getFormWebhooks' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormWebhooks' client (MkID formID) =
     Core.fetchJson client $
@@ -624,11 +807,23 @@ getFormWebhooks' client (MkID formID) =
   where
     path = Utils.ascii "/form/" <> formID <> Utils.ascii "/webhooks"
 
+-- | Add a new webhook.
+--
+-- Returns: list of webhooks for a specific form.
 createFormWebhook
-    :: FromJSON a => ApiClient -> ID Form -> Str.ByteString -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> Str.ByteString
+    -- ^ Webhook URL where form data will be posted when form is submitted.
+    -> IO a
 createFormWebhook client formID url =
     createFormWebhook' client formID url >>= simplifyIO
 
+-- | Non-simplified version of 'createFormWebhook' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 createFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> Str.ByteString -> IO (Response a)
 createFormWebhook' client (MkID formID) url =
@@ -646,11 +841,23 @@ createFormWebhook' client (MkID formID) url =
 
 -- /form/{id}/webhooks/{whid}
 
+-- | Delete a specific webhook of a form.
+--
+-- Returns: remaining webhook URLs of form.
 deleteFormWebhook
-    :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO a
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
+    -- form IDs when you call 'getForms'.
+    -> ID Webhook
+    -- ^ You can get webhook IDs when you call 'getFormWebhooks'
+    -> IO a
 deleteFormWebhook client formID whID =
     deleteFormWebhook' client formID whID >>= simplifyIO
 
+-- | Non-simplified version of 'deleteFormWebhook' - see note
+-- [here]("Network.JotForm.Api#g:functions").
 deleteFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO (Response a)
 deleteFormWebhook' client (MkID formID) (MkID whID) =
