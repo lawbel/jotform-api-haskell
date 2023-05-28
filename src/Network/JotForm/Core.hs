@@ -56,7 +56,6 @@ import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
 import Network.HTTP.Types (Header, Method, Query)
 import Network.HTTP.Types.Header qualified as Header
-import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Utils qualified as Utils
 
 newtype JsonException = MkJsonException String
@@ -182,7 +181,7 @@ toRequest client params =
         { Client.host = baseUrlToString $ baseUrl client
         , Client.path = versionPath <> path params <> outputPath
         , Client.method = method params
-        , Client.queryString = URI.renderQuery False (query params)
+        , Client.queryString = Utils.renderQuery $ query params
         , Client.requestBody = Client.RequestBodyBS $ body params
         , Client.requestHeaders = headers params <> defHeaders
         }

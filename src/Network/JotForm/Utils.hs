@@ -4,6 +4,7 @@ module Network.JotForm.Utils
     , showAscii
     , updateHeaders
     , encodeStrict
+    , renderQuery
     ) where
 
 import Data.Aeson (ToJSON)
@@ -14,7 +15,8 @@ import Data.ByteString.Char8 qualified as Byte.Str.Char8
 import Data.CaseInsensitive qualified as CaseIns
 import Network.HTTP.Client (Request)
 import Network.HTTP.Client qualified as Client
-import Network.HTTP.Types (HeaderName, RequestHeaders)
+import Network.HTTP.Types (HeaderName, Query, RequestHeaders)
+import Network.HTTP.Types.URI qualified as URI
 
 headerName :: String -> HeaderName
 headerName = CaseIns.mk . ascii
@@ -34,3 +36,8 @@ updateHeaders modify request =
 
 encodeStrict :: ToJSON a => a -> Str.ByteString
 encodeStrict = Byte.Str.toStrict . Json.encode
+
+-- | Convenience function - as we never need to render the '?' at the start
+-- of the query, it is easier to not have to specify that at every call site.
+renderQuery :: Query -> Str.ByteString
+renderQuery = URI.renderQuery False

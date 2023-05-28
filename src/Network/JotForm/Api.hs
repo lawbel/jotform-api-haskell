@@ -422,7 +422,7 @@ updateSettings' client options =
         Core.MkParams
             { Core.path = Utils.ascii "/user/settings"
             , Core.query = []
-            , Core.body = URI.renderQuery False $ optionsToQuery options
+            , Core.body = Utils.renderQuery $ optionsToQuery options
             , Core.headers = [Core.urlEncode]
             , Core.method = Method.methodPost
             }
@@ -528,7 +528,7 @@ createFormSubmission' client formId submission =
         Core.MkParams
             { Core.path = mconcat parts
             , Core.query = []
-            , Core.body = URI.renderQuery False query
+            , Core.body = Utils.renderQuery query
             , Core.headers = [Core.urlEncode]
             , Core.method = Method.methodPost
             }
