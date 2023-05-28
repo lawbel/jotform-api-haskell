@@ -93,11 +93,12 @@ module Network.JotForm.Api
     , Options (..)
     , optionsToQuery
 
-      -- ** FormId
-    , FormId (..)
+      -- ** ID Type
+    , ID (..)
 
-      -- ** QuestionId
-    , QuestionId (..)
+      -- *** Tags
+    , Form
+    , Question
     ) where
 
 import Control.Applicative (empty)
@@ -207,13 +208,12 @@ newtype Options = MkOptions
     }
     deriving (Eq, Ord, Show, Read)
 
-newtype FormId = MkFormId {unFormId :: Str.ByteString}
+newtype ID ty = MkID {unID :: Str.ByteString}
     deriving (Eq, Ord, Show, Read)
     deriving (IsString, Semigroup, Monoid) via Str.ByteString
 
-newtype QuestionId = MkQuestionId {unQuestionId :: Str.ByteString}
-    deriving (Eq, Ord, Show, Read)
-    deriving (IsString, Semigroup, Monoid) via Str.ByteString
+data Form
+data Question
 
 -- | A bundle of options that are re-used in a couple of places in the API
 -- where it can potentially return a (very) long list of values.
@@ -445,61 +445,61 @@ getHistory' client options =
 
 -- /form/{id}
 
-getForm :: FromJSON a => ApiClient -> FormId -> IO a
+getForm :: FromJSON a => ApiClient -> ID Form -> IO a
 getForm client formId = getForm' client formId >>= simplifyIO
 
-getForm' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getForm' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getForm' client formId =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> unFormId formId
+    path = Utils.ascii "/form/" <> unID formId
 
 -- /form/{id}/questions
 
-getFormQuestions :: FromJSON a => ApiClient -> FormId -> IO a
+getFormQuestions :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormQuestions client formId = getFormQuestions' client formId >>= simplifyIO
 
-getFormQuestions' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormQuestions' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormQuestions' client formId =
     Core.fetchJson client $
         Core.defaultParams (mconcat parts) Method.methodGet
   where
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/questions"
         ]
 
 -- /form/{id}/question/{qid}
 
 getFormQuestion
-    :: FromJSON a => ApiClient -> FormId -> QuestionId -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO a
 getFormQuestion client formId qId =
     getFormQuestion' client formId qId >>= simplifyIO
 
 getFormQuestion'
-    :: FromJSON a => ApiClient -> FormId -> QuestionId -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO (Response a)
 getFormQuestion' client formId qId =
     Core.fetchJson client $
         Core.defaultParams (mconcat parts) Method.methodGet
   where
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/question/"
-        , unQuestionId qId
+        , unID qId
         ]
 
 -- /form/{id}/submissions
 
 getFormSubmissions
-    :: FromJSON a => ApiClient -> FormId -> ListOptions -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> ListOptions -> IO a
 getFormSubmissions client formId options =
     getFormSubmissions' client formId options >>= simplifyIO
 
 getFormSubmissions'
-    :: FromJSON a => ApiClient -> FormId -> ListOptions -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> ListOptions -> IO (Response a)
 getFormSubmissions' client formId options =
     Core.fetchJson client $
         Core.MkParams
@@ -512,17 +512,17 @@ getFormSubmissions' client formId options =
   where
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/submissions"
         ]
 
 createFormSubmission
-    :: FromJSON a => ApiClient -> FormId -> Options -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> Options -> IO a
 createFormSubmission client formId submission =
     createFormSubmission' client formId submission >>= simplifyIO
 
 createFormSubmission'
-    :: FromJSON a => ApiClient -> FormId -> Options -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> Options -> IO (Response a)
 createFormSubmission' client formId submission =
     Core.fetchJson client $
         Core.MkParams
@@ -537,7 +537,7 @@ createFormSubmission' client formId submission =
     mapKeys = MkOptions . HashMap.Str.mapKeys questionName . unOptions
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/submissions"
         ]
 
@@ -555,12 +555,12 @@ questionName field = case Byte.Str.Char8.elemIndex '_' field of
     Nothing -> Utils.ascii "submission[" <> field <> Utils.ascii "]"
 
 createFormSubmissions
-    :: FromJSON a => ApiClient -> FormId -> Value -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> Value -> IO a
 createFormSubmissions client formId submissions =
     createFormSubmissions' client formId submissions >>= simplifyIO
 
 createFormSubmissions'
-    :: FromJSON a => ApiClient -> FormId -> Value -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> Value -> IO (Response a)
 createFormSubmissions' client formId submissions =
     Core.fetchJson client $
         Core.MkParams
@@ -573,16 +573,16 @@ createFormSubmissions' client formId submissions =
   where
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/submissions"
         ]
 
 -- /form/{id}/files
 
-getFormFiles :: FromJSON a => ApiClient -> FormId -> IO a
+getFormFiles :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormFiles client formId = getFormFiles' client formId >>= simplifyIO
 
-getFormFiles' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormFiles' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormFiles' client formId =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
@@ -590,16 +590,16 @@ getFormFiles' client formId =
     path = mconcat parts
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/files"
         ]
 
 -- /form/{id}/webhooks
 
-getFormWebhooks :: FromJSON a => ApiClient -> FormId -> IO a
+getFormWebhooks :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormWebhooks client formId = getFormWebhooks' client formId >>= simplifyIO
 
-getFormWebhooks' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormWebhooks' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormWebhooks' client formId =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
@@ -607,6 +607,6 @@ getFormWebhooks' client formId =
     path = mconcat parts
     parts =
         [ Utils.ascii "/form/"
-        , unFormId formId
+        , unID formId
         , Utils.ascii "/webhooks"
         ]
