@@ -31,12 +31,6 @@ module Network.JotForm.Core
       -- ** DebugMode
     , DebugMode (..)
 
-      -- ** Path
-    , Path
-
-      -- ** ApiKey
-    , ApiKey
-
       -- * Exceptions
 
       -- ** JsonException
@@ -70,10 +64,6 @@ newtype JsonException = MkJsonException String
 
 instance Exception JsonException
 
-type Path = Str.ByteString
-
-type ApiKey = Str.ByteString
-
 data BaseUrl = DefaultBaseUrl | EuBaseUrl
     deriving (Bounded, Enum, Eq, Ord, Show, Read)
 
@@ -86,14 +76,14 @@ data DebugMode = DebugOn | DebugOff
 data ApiClient = MkApiClient
     { baseUrl :: BaseUrl
     , apiVersion :: Str.ByteString
-    , apiKey :: ApiKey
+    , apiKey :: Str.ByteString
     , outputType :: OutputType
     , debugMode :: DebugMode
     , httpManager :: Manager
     }
 
 data Params = MkParams
-    { path :: Path
+    { path :: Str.ByteString
     , query :: Query
     , body :: Str.ByteString
     , headers :: [Header]
@@ -101,7 +91,7 @@ data Params = MkParams
     }
     deriving (Eq, Ord, Read, Show)
 
-defaultParams :: Path -> Method -> Params
+defaultParams :: Str.ByteString -> Method -> Params
 defaultParams thisPath thisMethod =
     MkParams
         { path = thisPath
@@ -126,14 +116,14 @@ defaultSecureRequest =
 -- TLS-enabled manager config from @http-client-tls@.
 --
 -- To pass a different 'Manager' instead use the 'defaultApiClient'' function.
-defaultApiClient :: ApiKey -> IO ApiClient
+defaultApiClient :: Str.ByteString -> IO ApiClient
 defaultApiClient key = do
     manager <- Client.newManager Client.TLS.tlsManagerSettings
     pure $ defaultApiClient' key manager
 
 -- | Creates an 'ApiClient' using default settings, and the given
 -- HTTP 'Manager'.
-defaultApiClient' :: ApiKey -> Manager -> ApiClient
+defaultApiClient' :: Str.ByteString -> Manager -> ApiClient
 defaultApiClient' key manager =
     MkApiClient
         { baseUrl = DefaultBaseUrl
@@ -146,14 +136,14 @@ defaultApiClient' key manager =
 
 -- | The same as 'defaultApiClient', but is set to use the EU endpoint - use
 -- this if your account is in EU Safe mode.
-defaultApiClientEu :: ApiKey -> IO ApiClient
+defaultApiClientEu :: Str.ByteString -> IO ApiClient
 defaultApiClientEu key = do
     def <- defaultApiClient key
     pure $ def {baseUrl = EuBaseUrl}
 
 -- | The same as 'defaultApiClient'', but is set to use the EU endpoint - use
 -- this if your account is in EU Safe mode.
-defaultApiClientEu' :: ApiKey -> Manager -> ApiClient
+defaultApiClientEu' :: Str.ByteString -> Manager -> ApiClient
 defaultApiClientEu' key manager =
     let def = defaultApiClient' key manager
     in  def {baseUrl = EuBaseUrl}

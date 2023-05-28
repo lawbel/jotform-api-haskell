@@ -7,10 +7,11 @@ import Data.Aeson qualified as Json
 import Data.Aeson.Encode.Pretty qualified as Json.Pretty
 import Data.Aeson.Optics (key, _Integer, _String)
 import Data.ByteString qualified as Byte.Str
+import Data.ByteString qualified as Str (ByteString)
 import Data.ByteString.Char8 qualified as Byte.Str.Char8
 import Data.ByteString.Lazy.Char8 qualified as Byte.Lazy.Char8
 import Data.Foldable (for_)
-import Network.JotForm (ApiClient, ApiKey)
+import Network.JotForm (ApiClient)
 import Network.JotForm qualified as JotForm
 import Optics.Core ((%), (^?))
 import Text.Printf (printf)
@@ -79,7 +80,7 @@ getClient =
     getClientFrom "test-api-key-eu.txt" JotForm.defaultApiClientEu
         <|> getClientFrom "test-api-key.txt" JotForm.defaultApiClient
 
-getClientFrom :: FilePath -> (ApiKey -> IO ApiClient) -> IO ApiClient
+getClientFrom :: FilePath -> (Str.ByteString -> IO ApiClient) -> IO ApiClient
 getClientFrom fileName mkClient = do
     apiKey <- Byte.Str.readFile fileName
     mkClient $ Byte.Str.Char8.strip apiKey
