@@ -69,6 +69,14 @@ module Network.JotForm.Api
     , createFormSubmissions
     , createFormSubmissions'
 
+      -- *** \/form\/{id}\/files
+    , getFormFiles
+    , getFormFiles'
+
+      -- *** \/form\/{id}\/webhooks
+    , getFormWebhooks
+    , getFormWebhooks'
+
       -- * Helper Types
 
       -- ** ListOptions
@@ -187,6 +195,10 @@ import Network.JotForm.Utils qualified as Utils
 -- | @\/form\/{id}\/question\/{qid}@ | 'getFormQuestion'    | -                      | -                       | -      |
 -- +---------------------------------+----------------------+------------------------+-------------------------+--------+
 -- | @\/form\/{id}\/submissions@     | 'getFormSubmissions' | 'createFormSubmission' | 'createFormSubmissions' | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}\/files@           | 'getFormFiles'       | -                      | -                       | -      |
+-- +---------------------------------+----------------------+------------------------+-------------------------+--------+
+-- | @\/form\/{id}\/webhooks@        | 'getFormWebhooks'    | -                      | -                       | -      |
 -- +---------------------------------+----------------------+------------------------+-------------------------+--------+
 
 -- | A collection of key-value options.
@@ -543,3 +555,27 @@ createFormSubmissions' client formId submissions =
             }
   where
     path = "/form/" <> unFormId formId <> "/submissions"
+
+-- /form/{id}/files
+
+getFormFiles :: FromJSON a => ApiClient -> FormId -> IO a
+getFormFiles client formId = getFormFiles' client formId >>= simplifyIO
+
+getFormFiles' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormFiles' client formId =
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii path) Method.methodGet
+  where
+    path = "/form/" <> unFormId formId <> "/files"
+
+-- /form/{id}/webhooks
+
+getFormWebhooks :: FromJSON a => ApiClient -> FormId -> IO a
+getFormWebhooks client formId = getFormWebhooks' client formId >>= simplifyIO
+
+getFormWebhooks' :: FromJSON a => ApiClient -> FormId -> IO (Response a)
+getFormWebhooks' client formId =
+    Core.fetchJson client $
+        Core.defaultParams (Utils.ascii path) Method.methodGet
+  where
+    path = "/form/" <> unFormId formId <> "/webhooks"
