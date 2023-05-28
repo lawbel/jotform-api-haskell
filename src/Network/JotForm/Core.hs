@@ -168,13 +168,6 @@ fetchJson client params = do
     request = toRequest client params
     requestJson = Utils.updateHeaders (acceptJson :) request
 
--- | Properly handles the methods needed by the JotForm API, which at time
--- of writing are:
---
--- * 'Method.methodGet' (GET)
--- * 'Method.methodPost' (POST)
--- * 'Method.methodDelete' (DELETE)
--- * 'Method.methodPut' (PUT)
 toRequest :: ApiClient -> Params -> Request
 toRequest client params =
     defaultSecureRequest
