@@ -290,7 +290,7 @@ data ListOptions = MkListOptions
     deriving (Eq, Ord, Show, Read)
 
 -- | A bundle of options are re-used in a couple of places in the API
--- where it can potentially return a history/queue of some type.
+-- where it can potentially return a history\/queue of some type.
 data HistoryOptions = MkHistoryOptions
     { action :: Maybe Str.ByteString
     -- ^ Filter results by activity performed. Default is \"all\".
@@ -560,7 +560,7 @@ updateSettings' client options =
 
 -- | Get user activity log.
 --
--- Returns: activity log about things like forms created/modified/deleted,
+-- Returns: activity log about things like forms created\/modified\/deleted,
 -- account logins and other operations.
 getHistory :: FromJSON a => ApiClient -> HistoryOptions -> IO a
 getHistory client options = getHistory' client options >>= simplifyIO
