@@ -14,7 +14,7 @@ module Network.JotForm.Utils
 
       -- * Date / Time
     , formatDateText
-    , showDateJF
+    , renderDateJF
 
       -- * QueryText
     , renderQueryText
@@ -72,5 +72,5 @@ formatDateText :: FormatTime t => TimeLocale -> Str.Text -> t -> Str.Text
 formatDateText locale fmt time =
     Text.Str.pack $ Time.formatTime locale (Text.Str.unpack fmt) time
 
-showDateJF :: Day -> Str.Text
-showDateJF = formatDateText Time.defaultTimeLocale "%m/%d/%Y"
+renderDateJF :: Day -> Str.Text
+renderDateJF = formatDateText Time.defaultTimeLocale "%m/%d/%Y"

@@ -352,8 +352,8 @@ historyOptionsToQuery options = do
         [ action options
         , date options
         , sortBy options
-        , Utils.showDateJF <$> startDate options
-        , Utils.showDateJF <$> endDate options
+        , Utils.renderDateJF <$> startDate options
+        , Utils.renderDateJF <$> endDate options
         ]
 
 -- | A default 'HistoryOptions' value; it simply sets 'Nothing' as the
