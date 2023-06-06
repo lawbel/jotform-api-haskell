@@ -90,7 +90,11 @@ data Params = MkParams
     }
     deriving (Eq, Ord, Read, Show)
 
-defParams :: Str.Text -> Method -> Params
+defParams
+    :: Str.Text
+    -- ^ URL path
+    -> Method
+    -> Params
 defParams thisPath thisMethod =
     MkParams
         { path = thisPath
