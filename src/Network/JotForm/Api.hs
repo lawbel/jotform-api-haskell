@@ -165,6 +165,7 @@ import Network.HTTP.Types (QueryText)
 import Network.HTTP.Types.Method qualified as Method
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
+import Network.JotForm.Utils ((&=))
 import Network.JotForm.Utils qualified as Utils
 
 -- $intro
@@ -325,7 +326,7 @@ listOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
-        Just val -> pure (key, Just val)
+        Just val -> pure (key &= val)
   where
     keys = ["offset", "limit", "filter", "orderby"]
     vals =
@@ -345,7 +346,7 @@ historyOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
-        Just val -> pure (key, Just val)
+        Just val -> pure (key &= val)
   where
     keys = ["action", "date", "sortBy", "startDate", "endDate"]
     vals =

@@ -17,6 +17,7 @@ module Network.JotForm.Utils
     , renderDateJF
 
       -- * QueryText
+    , (&=)
     , renderQueryText
     , renderQueryBytes
     ) where
@@ -61,6 +62,10 @@ encodeText = Text.Lazy.toStrict . Json.Text.encodeToLazyText
 -- of the query, it is easier to not have to specify that at every call site.
 renderQueryText :: QueryText -> Str.Text
 renderQueryText = Text.Str.Enc.decodeUtf8 . renderQueryBytes
+
+infixr 8 &=  -- same as (.=) from aeson
+(&=) :: k -> v -> (k, Maybe v)
+key &= value = (key, Just value)
 
 renderQueryBytes :: QueryText -> Str.ByteString
 renderQueryBytes =
