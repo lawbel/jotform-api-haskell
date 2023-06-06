@@ -291,8 +291,8 @@ data ListOptions = MkListOptions
     }
     deriving (Eq, Ord, Show, Read)
 
--- | A bundle of options are re-used in a couple of places in the API
--- where it can potentially return a history\/queue of some type.
+-- | A bundle of options provided for convenience when requesting a
+-- history\/queue.
 data HistoryOptions = MkHistoryOptions
     { action :: Maybe Str.Text
     -- ^ Filter results by activity performed. Default is \"all\".
@@ -390,7 +390,7 @@ simplifyIO = either (throwIO . Core.MkJsonException) pure . simplify
 
 -- | Get user account details for a JotForm user.
 --
--- Returns:
+-- Returns a variety of information, including:
 --
 -- * user account type
 -- * avatar URL
