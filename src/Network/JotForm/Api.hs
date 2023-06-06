@@ -122,15 +122,15 @@ module Network.JotForm.Api
 
       -- * Helper Types
 
-      -- ** ListOptions
-    , ListOptions (..)
-    , defaultListOptions
-    , listOptionsToQuery
+      -- ** ListOpts
+    , ListOpts (..)
+    , defListOpts
+    , listOptsToQuery
 
-      -- ** HistoryOptions
-    , HistoryOptions (..)
-    , defaultHistoryOptions
-    , historyOptionsToQuery
+      -- ** HistoryOpts
+    , HistoryOpts (..)
+    , defHistoryOpts
+    , historyOptsToQuery
 
       -- *** Action
     , UserAction (..)
@@ -296,7 +296,7 @@ data Webhook
 -- * if @offset = Nothing@ then the default value used by JotForm is 20
 -- * if @limit = Nothing@ then the default value used by JotForm is 20
 -- * the maximum @limit@ is 1000
-data ListOptions = MkListOptions
+data ListOpts = MkListOpts
     { offset :: Maybe Int
     -- ^ Start of each result list; useful for pagination.
     , limit :: Maybe Int
@@ -351,7 +351,7 @@ data SortBy
 
 -- | A bundle of options provided for convenience when requesting a
 -- history\/queue.
-data HistoryOptions = MkHistoryOptions
+data HistoryOpts = MkHistoryOpts
     { action :: Maybe UserAction
     -- ^ Filter results by activity performed. Default is 'AllActions'.
     , dateFilter :: DateFilter
@@ -398,21 +398,21 @@ dateFilterToQuery = \case
     startQuery day = "startDate" &= Utils.renderDateJF day
     endQuery day = "endDate" &= Utils.renderDateJF day
 
--- | A default 'ListOptions' value; it simply sets 'Nothing' as the value
+-- | A default 'ListOpts' value; it simply sets 'Nothing' as the value
 -- of each option, so that none of these options is specified.
-defaultListOptions :: ListOptions
-defaultListOptions =
-    MkListOptions
+defListOpts :: ListOpts
+defListOpts =
+    MkListOpts
         { offset = Nothing
         , limit = Nothing
         , filters = Nothing
         , orderBy = Nothing
         }
 
--- | Conversion function from 'ListOptions' to 'QueryText' - not something that
+-- | Conversion function from 'ListOpts' to 'QueryText' - not something that
 -- end users will normally need, but provided just in case.
-listOptionsToQuery :: ListOptions -> QueryText
-listOptionsToQuery options = do
+listOptsToQuery :: ListOpts -> QueryText
+listOptsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
@@ -431,8 +431,8 @@ listOptionsToQuery options = do
 optionsToQuery :: Options -> QueryText
 optionsToQuery = fmap (second Just) . HashMap.Str.toList . unOptions
 
-historyOptionsToQuery :: HistoryOptions -> QueryText
-historyOptionsToQuery options =
+historyOptsToQuery :: HistoryOpts -> QueryText
+historyOptsToQuery options =
     dateFilterToQuery (dateFilter options) <> otherQueries
   where
     otherQueries = do
@@ -446,11 +446,11 @@ historyOptionsToQuery options =
         , renderSortBy <$> sortBy options
         ]
 
--- | A default 'HistoryOptions' value; it simply sets 'Nothing'/'NoFilter' as the
+-- | A default 'HistoryOpts' value; it simply sets 'Nothing'/'NoFilter' as the
 -- value of each option, so that none of the options are specified.
-defaultHistoryOptions :: HistoryOptions
-defaultHistoryOptions =
-    MkHistoryOptions
+defHistoryOpts :: HistoryOpts
+defHistoryOpts =
+    MkHistoryOpts
         { action = Nothing
         , dateFilter = NoFilter
         , sortBy = Nothing
@@ -493,7 +493,7 @@ getUser client = getUser' client >>= simplifyIO
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' client =
     Core.fetchJson client $
-        Core.defaultParams "/user" Method.methodGet
+        Core.defParams "/user" Method.methodGet
 
 -- /user/usage
 
@@ -513,7 +513,7 @@ getUsage client = getUsage' client >>= simplifyIO
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client $
-        Core.defaultParams "/user/usage" Method.methodGet
+        Core.defParams "/user/usage" Method.methodGet
 
 -- /user/forms
 
@@ -521,17 +521,17 @@ getUsage' client =
 --
 -- Returns: basic details such as title of the form, when it was created,
 -- number of new and total submissions.
-getForms :: FromJSON a => ApiClient -> ListOptions -> IO a
+getForms :: FromJSON a => ApiClient -> ListOpts -> IO a
 getForms client options = getForms' client options >>= simplifyIO
 
 -- | Non-simplified version of 'getForms' - see note
 -- [here]("Network.JotForm.Api#g:functions").
-getForms' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
+getForms' :: FromJSON a => ApiClient -> ListOpts -> IO (Response a)
 getForms' client options =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = "/user/forms"
-            , Core.query = listOptionsToQuery options
+            , Core.query = listOptsToQuery options
             , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
@@ -543,17 +543,17 @@ getForms' client options =
 --
 -- Returns: basic details such as title of the form, when it was created,
 -- number of new and total submissions.
-getSubmissions :: FromJSON a => ApiClient -> ListOptions -> IO a
+getSubmissions :: FromJSON a => ApiClient -> ListOpts -> IO a
 getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
 -- | Non-simplified version of 'getSubmissions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
-getSubmissions' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
+getSubmissions' :: FromJSON a => ApiClient -> ListOpts -> IO (Response a)
 getSubmissions' client options =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = "/user/submissions"
-            , Core.query = listOptionsToQuery options
+            , Core.query = listOptsToQuery options
             , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
@@ -572,7 +572,7 @@ getSubUsers client = getSubUsers' client >>= simplifyIO
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' client =
     Core.fetchJson client $
-        Core.defaultParams "/user/subusers" Method.methodGet
+        Core.defParams "/user/subusers" Method.methodGet
 
 -- /user/folders
 
@@ -587,7 +587,7 @@ getFolders client = getFolders' client >>= simplifyIO
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' client =
     Core.fetchJson client $
-        Core.defaultParams "/user/folders" Method.methodGet
+        Core.defParams "/user/folders" Method.methodGet
 
 -- /user/reports
 
@@ -603,7 +603,7 @@ getReports client = getReports' client >>= simplifyIO
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' client =
     Core.fetchJson client $
-        Core.defaultParams "/user/reports" Method.methodGet
+        Core.defParams "/user/reports" Method.methodGet
 
 -- /user/settings
 
@@ -618,7 +618,7 @@ getSettings client = getSettings' client >>= simplifyIO
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' client =
     Core.fetchJson client $
-        Core.defaultParams "/user/settings" Method.methodGet
+        Core.defParams "/user/settings" Method.methodGet
 
 -- | Update user's settings.
 --
@@ -651,17 +651,17 @@ updateSettings' client options =
 --
 -- Returns: activity log about things like forms created\/modified\/deleted,
 -- account logins and other operations.
-getHistory :: FromJSON a => ApiClient -> HistoryOptions -> IO a
+getHistory :: FromJSON a => ApiClient -> HistoryOpts -> IO a
 getHistory client options = getHistory' client options >>= simplifyIO
 
 -- | Non-simplified version of 'getHistory' - see note
 -- [here]("Network.JotForm.Api#g:functions").
-getHistory' :: FromJSON a => ApiClient -> HistoryOptions -> IO (Response a)
+getHistory' :: FromJSON a => ApiClient -> HistoryOpts -> IO (Response a)
 getHistory' client options =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = "/user/history"
-            , Core.query = historyOptionsToQuery options
+            , Core.query = historyOptsToQuery options
             , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
@@ -686,7 +686,7 @@ getForm client formID = getForm' client formID >>= simplifyIO
 getForm' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getForm' client (MkID formID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodGet
+        Core.defParams path Method.methodGet
   where
     path = "/form/" <> formID
 
@@ -709,7 +709,7 @@ getFormQuestions client formID = getFormQuestions' client formID >>= simplifyIO
 getFormQuestions' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormQuestions' client (MkID formID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodGet
+        Core.defParams path Method.methodGet
   where
     path = "/form/" <> formID <> "/questions"
 
@@ -737,7 +737,7 @@ getFormQuestion'
     :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO (Response a)
 getFormQuestion' client (MkID formID) (MkID qID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodGet
+        Core.defParams path Method.methodGet
   where
     path = "/form/" <> formID <> "/question/" <> qID
 
@@ -752,7 +752,7 @@ getFormSubmissions
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
     -- form IDs when you call 'getForms'.
-    -> ListOptions
+    -> ListOpts
     -> IO a
 getFormSubmissions client formID options =
     getFormSubmissions' client formID options >>= simplifyIO
@@ -760,12 +760,12 @@ getFormSubmissions client formID options =
 -- | Non-simplified version of 'getFormSubmissions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormSubmissions'
-    :: FromJSON a => ApiClient -> ID Form -> ListOptions -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> ListOpts -> IO (Response a)
 getFormSubmissions' client (MkID formID) options =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = path
-            , Core.query = listOptionsToQuery options
+            , Core.query = listOptsToQuery options
             , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
@@ -863,7 +863,7 @@ getFormFiles client formID = getFormFiles' client formID >>= simplifyIO
 getFormFiles' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormFiles' client (MkID formID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodGet
+        Core.defParams path Method.methodGet
   where
     path = "/form/" <> formID <> "/files"
 
@@ -886,7 +886,7 @@ getFormWebhooks client formID = getFormWebhooks' client formID >>= simplifyIO
 getFormWebhooks' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormWebhooks' client (MkID formID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodGet
+        Core.defParams path Method.methodGet
   where
     path = "/form/" <> formID <> "/webhooks"
 
@@ -945,6 +945,6 @@ deleteFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO (Response a)
 deleteFormWebhook' client (MkID formID) (MkID whID) =
     Core.fetchJson client $
-        Core.defaultParams path Method.methodDelete
+        Core.defParams path Method.methodDelete
   where
     path = "/form/" <> formID <> "/webhooks/" <> whID

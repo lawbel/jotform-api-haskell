@@ -15,9 +15,9 @@ import           Text.Printf            -- base
 
 main :: IO ()
 main = do
-    -- if account is in EU safe mode, use 'JF.defaultApiClientEu' instead
-    client <- JF.defaultApiClient "YOUR API KEY"
-    forms :: [Json.Value] <- JF.getForms client JF.defaultListOptions
+    -- if account is in EU safe mode, use 'JF.defApiClientEu' instead
+    client <- JF.defApiClient "YOUR API KEY"
+    forms :: [Json.Value] <- JF.getForms client JF.defListOpts
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         let total = form ^? key "count" % _String % _Integer
@@ -42,9 +42,9 @@ import qualified Network.JotForm as JF               -- jotform-api-haskell
 
 main :: IO ()
 main = do
-    client <- JF.defaultApiClient "YOUR API KEY"
+    client <- JF.defApiClient "YOUR API KEY"
     submissions :: [Json.Value] <- JF.getSubmissions client $
-        JF.defaultListOptions
+        JF.defListOpts
             { JF.offset = Just 0
             , JF.limit = Just 100
             , JF.orderBy = Just "created_at" }
@@ -66,14 +66,14 @@ main = do
     let submissionFilter = object
             [ "created_at:gt" .= ("2020-02-20" :: String) ]
     submissions :: [Value] <- JF.getSubmissions client $
-        JF.defaultListOptions { JF.filters = Just submissionFilter }
+        JF.defListOpts { JF.filters = Just submissionFilter }
     print submissions
 
     let formFilter = object
             [ "new:gt" .= ("0" :: String)
             , "status" .= ("ENABLED" :: String) ]
     forms :: [Value] <- JF.getForms client $
-        JF.defaultListOptions { JF.filters = Just formFilter }
+        JF.defListOpts { JF.filters = Just formFilter }
     print forms
 ```
 

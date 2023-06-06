@@ -5,12 +5,12 @@ module Network.JotForm.Core
       ApiClient (..)
 
       -- ** Defaults
-    , defaultApiClient
-    , defaultApiClient'
+    , defApiClient
+    , defApiClient'
 
       -- ** EU Defaults
-    , defaultApiClientEu
-    , defaultApiClientEu'
+    , defApiClientEu
+    , defApiClientEu'
 
       -- * Core Functionality
     , fetch
@@ -19,7 +19,7 @@ module Network.JotForm.Core
 
       -- ** Parameters
     , Params (..)
-    , defaultParams
+    , defParams
 
       -- * Other Types
 
@@ -90,8 +90,8 @@ data Params = MkParams
     }
     deriving (Eq, Ord, Read, Show)
 
-defaultParams :: Str.Text -> Method -> Params
-defaultParams thisPath thisMethod =
+defParams :: Str.Text -> Method -> Params
+defParams thisPath thisMethod =
     MkParams
         { path = thisPath
         , query = []
@@ -100,8 +100,8 @@ defaultParams thisPath thisMethod =
         , method = thisMethod
         }
 
-defaultSecureRequest :: Request
-defaultSecureRequest =
+defSecureRequest :: Request
+defSecureRequest =
     Client.defaultRequest
         { Client.secure = True
         , Client.port = 443
@@ -110,16 +110,16 @@ defaultSecureRequest =
 -- | Creates an 'ApiClient' using default settings, and the default
 -- TLS-enabled manager config from @http-client-tls@.
 --
--- To pass a different 'Manager' instead use the 'defaultApiClient'' function.
-defaultApiClient :: Str.Text -> IO ApiClient
-defaultApiClient key = do
+-- To pass a different 'Manager' instead use the 'defApiClient'' function.
+defApiClient :: Str.Text -> IO ApiClient
+defApiClient key = do
     manager <- Client.newManager Client.TLS.tlsManagerSettings
-    pure $ defaultApiClient' key manager
+    pure $ defApiClient' key manager
 
 -- | Creates an 'ApiClient' using default settings, and the given
 -- HTTP 'Manager'.
-defaultApiClient' :: Str.Text -> Manager -> ApiClient
-defaultApiClient' key manager =
+defApiClient' :: Str.Text -> Manager -> ApiClient
+defApiClient' key manager =
     MkApiClient
         { baseUrl = DefaultBaseUrl
         , apiVersion = "v1"
@@ -129,18 +129,18 @@ defaultApiClient' key manager =
         , httpManager = manager
         }
 
--- | The same as 'defaultApiClient', but is set to use the EU endpoint - use
+-- | The same as 'defApiClient', but is set to use the EU endpoint - use
 -- this if your account is in EU Safe mode.
-defaultApiClientEu :: Str.Text -> IO ApiClient
-defaultApiClientEu key = do
-    def <- defaultApiClient key
+defApiClientEu :: Str.Text -> IO ApiClient
+defApiClientEu key = do
+    def <- defApiClient key
     pure $ def {baseUrl = EuBaseUrl}
 
--- | The same as 'defaultApiClient'', but is set to use the EU endpoint - use
+-- | The same as 'defApiClient'', but is set to use the EU endpoint - use
 -- this if your account is in EU Safe mode.
-defaultApiClientEu' :: Str.Text -> Manager -> ApiClient
-defaultApiClientEu' key manager =
-    let def = defaultApiClient' key manager
+defApiClientEu' :: Str.Text -> Manager -> ApiClient
+defApiClientEu' key manager =
+    let def = defApiClient' key manager
     in  def {baseUrl = EuBaseUrl}
 
 baseUrlToString :: BaseUrl -> Str.Text
@@ -166,7 +166,7 @@ fetchJson client params = do
 
 toRequest :: ApiClient -> Params -> Request
 toRequest client params =
-    defaultSecureRequest
+    defSecureRequest
         { Client.host = encode $ baseUrlToString $ baseUrl client
         , Client.path = encode $ versionPath <> path params <> outputPath
         , Client.method = method params

@@ -22,7 +22,7 @@ putJsonPretty = Byte.Lazy.Char8.putStrLn . Json.Pretty.encodePretty
 
 getForms :: ApiClient -> IO ()
 getForms client = do
-    forms :: [Value] <- JotForm.getForms client JotForm.defaultListOptions
+    forms :: [Value] <- JotForm.getForms client JotForm.defListOpts
     for_ forms $ \form -> do
         let title = form ^? key "title" % _String
         let total = form ^? key "count" % _String % _Integer
@@ -39,7 +39,7 @@ getLatestSubmissions :: ApiClient -> IO ()
 getLatestSubmissions client = do
     submissions :: [Value] <-
         JotForm.getSubmissions client $
-            JotForm.defaultListOptions
+            JotForm.defListOpts
                 { JotForm.offset = Just 0
                 , JotForm.limit = Just 100
                 , JotForm.orderBy = Just "created_at"
@@ -54,7 +54,7 @@ submissionAndFormFilters client = do
                 ]
     submissions :: [Value] <-
         JotForm.getSubmissions client $
-            JotForm.defaultListOptions
+            JotForm.defListOpts
                 { JotForm.filters = Just submissionFilter
                 }
     putJsonPretty submissions
@@ -66,7 +66,7 @@ submissionAndFormFilters client = do
                 ]
     forms :: [Value] <-
         JotForm.getForms client $
-            JotForm.defaultListOptions {JotForm.filters = Just formFilter}
+            JotForm.defListOpts {JotForm.filters = Just formFilter}
     putJsonPretty forms
 
 -- | Use the API key in either of:
@@ -78,8 +78,8 @@ submissionAndFormFilters client = do
 -- or 'JotForm.defaultApiClient'.
 getClient :: IO ApiClient
 getClient =
-    getClientFrom "test-api-key-eu.txt" JotForm.defaultApiClientEu
-        <|> getClientFrom "test-api-key.txt" JotForm.defaultApiClient
+    getClientFrom "test-api-key-eu.txt" JotForm.defApiClientEu
+        <|> getClientFrom "test-api-key.txt" JotForm.defApiClient
 
 getClientFrom :: FilePath -> (Str.Text -> IO ApiClient) -> IO ApiClient
 getClientFrom fileName mkClient = do
