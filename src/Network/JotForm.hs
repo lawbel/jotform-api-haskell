@@ -1,7 +1,10 @@
 module Network.JotForm
-    ( module Network.JotForm.Core
-    , module Network.JotForm.Api
+    ( -- * The main module
+      module Network.JotForm.Api
+
+      -- * Internals
+    , module Network.JotForm.Core
     ) where
 
-import Network.JotForm.Core
 import Network.JotForm.Api
+import Network.JotForm.Core
