@@ -164,7 +164,7 @@ module Network.JotForm.Api
 
 import Control.Applicative (empty)
 import Control.Exception (throwIO)
-import Data.Aeson (FromJSON, Value)
+import Data.Aeson (FromJSON, ToJSON, Value)
 import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
@@ -275,7 +275,7 @@ newtype Options = MkOptions
 
 newtype ID ty = MkID {unID :: Str.Text}
     deriving (Eq, Ord, Show, Read)
-    deriving (IsString, Semigroup, Monoid) via Str.Text
+    deriving (IsString, Semigroup, Monoid, FromJSON, ToJSON) via Str.Text
 
 -- $tags
 --
