@@ -132,6 +132,22 @@ module Network.JotForm.Api
     , defaultHistoryOptions
     , historyOptionsToQuery
 
+      -- *** Action
+    , UserAction (..)
+    , renderUserAction
+
+      -- *** SortBy
+    , SortBy (..)
+    , renderSortBy
+
+      -- *** DateRange
+    , DateRange (..)
+    , renderDateRange
+
+      -- *** DateFilter
+    , DateFilter (..)
+    , dateFilterToQuery
+
       -- ** Options
     , Options (..)
     , optionsToQuery
@@ -158,6 +174,7 @@ import Data.HashMap.Strict qualified as Str (HashMap)
 import Data.String (IsString)
 import Data.Text qualified as Str (Text)
 import Data.Text qualified as Text.Str
+import Data.These (These (..))
 import Data.Time (Day)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
@@ -291,22 +308,95 @@ data ListOptions = MkListOptions
     }
     deriving (Eq, Ord, Show, Read)
 
+data UserAction
+    = AllActions
+    | UserCreation
+    | UserLogin
+    | FormCreation
+    | FormUpdate
+    | FormDelete
+    | FormPurge
+    deriving (Bounded, Enum, Eq, Ord, Show, Read)
+
+data DateFilter
+    = -- | The empty filter.
+      NoFilter
+    | -- | Limit results by a given preset 'DateRange'.
+      RangeFilter DateRange
+    | -- | Represents a filter between the start/end dates given (if any).
+      -- Given @'StartEndFilter' these@, the possible cases are:
+      --
+      -- * if @these == 'This' start@, then limit results to after @start@.
+      -- * if @these == 'That' end@, then limit results to before @end@.
+      -- * if @these == 'These' start end@, then limit results to after
+      --   @start@ and before @end@.
+      StartEndFilter (These Day Day)
+    deriving (Eq, Ord, Show, Read)
+
+data DateRange
+    = LastWeek
+    | LastMonth
+    | Last3Months
+    | Last6Months
+    | LastYear
+    | AllTime
+    deriving (Bounded, Enum, Eq, Ord, Show, Read)
+
+data SortBy
+    = -- | Sort ascending.
+      SortAsc
+    | -- | Sort descending.
+      SortDesc
+    deriving (Bounded, Enum, Eq, Ord, Show, Read)
+
 -- | A bundle of options provided for convenience when requesting a
 -- history\/queue.
 data HistoryOptions = MkHistoryOptions
-    { action :: Maybe Str.Text
-    -- ^ Filter results by activity performed. Default is \"all\".
-    , date :: Maybe Str.Text
-    -- ^ Limit results by a date range. If you'd like to limit results by
-    -- specific dates you can use 'startDate' and 'endDate' fields instead.
-    , sortBy :: Maybe Str.Text
+    { action :: Maybe UserAction
+    -- ^ Filter results by activity performed. Default is 'AllActions'.
+    , dateFilter :: DateFilter
+    -- ^ Limit results by a date filter.
+    , sortBy :: Maybe SortBy
     -- ^ Lists results by ascending and descending order.
-    , startDate :: Maybe Day
-    -- ^ Limit results to only after a specific date.
-    , endDate :: Maybe Day
-    -- ^ Limit results to only before a specific date.
     }
     deriving (Eq, Ord, Show, Read)
+
+renderUserAction :: UserAction -> Str.Text
+renderUserAction = \case
+    AllActions -> "all"
+    UserCreation -> "userCreation"
+    UserLogin -> "userLogin"
+    FormCreation -> "formCreation"
+    FormUpdate -> "formUpdate"
+    FormDelete -> "formDelete"
+    FormPurge -> "formPurge"
+
+renderSortBy :: SortBy -> Str.Text
+renderSortBy = \case
+    SortAsc -> "ASC"
+    SortDesc -> "DESC"
+
+renderDateRange :: DateRange -> Str.Text
+renderDateRange = \case
+    LastWeek -> "lastWeek"
+    LastMonth -> "lastMonth"
+    Last3Months -> "last3Months"
+    Last6Months -> "last6Months"
+    LastYear -> "lastYear"
+    AllTime -> "all"
+
+-- | Conversion function from 'DateFilter' to 'QueryText' - not something that
+-- end users will normally need, but provided just in case.
+dateFilterToQuery :: DateFilter -> QueryText
+dateFilterToQuery = \case
+    NoFilter -> []
+    RangeFilter range -> ["date" &= renderDateRange range]
+    StartEndFilter (This start) -> [startQuery start]
+    StartEndFilter (That end) -> [endQuery end]
+    StartEndFilter (These start end) -> [startQuery start, endQuery end]
+  where
+    startQuery day = "startDate" &= Utils.renderDateJF day
+    endQuery day = "endDate" &= Utils.renderDateJF day
 
 -- | A default 'ListOptions' value; it simply sets 'Nothing' as the value
 -- of each option, so that none of these options is specified.
@@ -342,31 +432,28 @@ optionsToQuery :: Options -> QueryText
 optionsToQuery = fmap (second Just) . HashMap.Str.toList . unOptions
 
 historyOptionsToQuery :: HistoryOptions -> QueryText
-historyOptionsToQuery options = do
-    (key, mVal) <- keys `zip` vals
-    case mVal of
-        Nothing -> empty
-        Just val -> pure (key &= val)
+historyOptionsToQuery options =
+    dateFilterToQuery (dateFilter options) <> otherQueries
   where
-    keys = ["action", "date", "sortBy", "startDate", "endDate"]
+    otherQueries = do
+        (key, mVal) <- keys `zip` vals
+        case mVal of
+            Nothing -> empty
+            Just val -> pure (key &= val)
+    keys = ["action", "sortBy"]
     vals =
-        [ action options
-        , date options
-        , sortBy options
-        , Utils.renderDateJF <$> startDate options
-        , Utils.renderDateJF <$> endDate options
+        [ renderUserAction <$> action options
+        , renderSortBy <$> sortBy options
         ]
 
--- | A default 'HistoryOptions' value; it simply sets 'Nothing' as the
--- value of each option, so that none of these options is specified.
+-- | A default 'HistoryOptions' value; it simply sets 'Nothing'/'NoFilter' as the
+-- value of each option, so that none of the options are specified.
 defaultHistoryOptions :: HistoryOptions
 defaultHistoryOptions =
     MkHistoryOptions
         { action = Nothing
-        , date = Nothing
+        , dateFilter = NoFilter
         , sortBy = Nothing
-        , startDate = Nothing
-        , endDate = Nothing
         }
 
 -- | Pull out the "content" field from a response body and return it.
