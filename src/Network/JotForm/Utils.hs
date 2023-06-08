@@ -32,7 +32,7 @@ import Data.Text qualified as Str (Text)
 import Data.Text qualified as Text.Str
 import Data.Text.Encoding qualified as Text.Str.Enc
 import Data.Text.Lazy qualified as Text.Lazy
-import Data.Time (FormatTime, TimeLocale, Day)
+import Data.Time (Day, FormatTime, TimeLocale)
 import Data.Time qualified as Time
 import Network.HTTP.Client (Request)
 import Network.HTTP.Client qualified as Client

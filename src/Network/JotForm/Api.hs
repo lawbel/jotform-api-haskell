@@ -136,17 +136,17 @@ module Network.JotForm.Api
     , UserAction (..)
     , renderUserAction
 
-      -- *** SortBy
-    , SortBy (..)
-    , renderSortBy
+      -- *** DateFilter
+    , DateFilter (..)
+    , dateFilterToQuery
 
       -- *** DateRange
     , DateRange (..)
     , renderDateRange
 
-      -- *** DateFilter
-    , DateFilter (..)
-    , dateFilterToQuery
+      -- *** SortBy
+    , SortBy (..)
+    , renderSortBy
 
       -- ** Options
     , Options (..)
