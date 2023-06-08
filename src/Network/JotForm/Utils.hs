@@ -1,8 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Network.JotForm.Utils
-    ( -- * Headers
-      headerName
+    ( -- * Either
+      maybeToEither
+    , resultToEither
+
+      -- * Headers
+    , headerName
     , updateHeaders
 
       -- * Text
@@ -23,6 +27,7 @@ module Network.JotForm.Utils
     ) where
 
 import Data.Aeson (ToJSON)
+import Data.Aeson qualified as Json
 import Data.Aeson.Text qualified as Json.Text
 import Data.ByteString qualified as Byte.Str
 import Data.ByteString qualified as Str (ByteString)
@@ -38,6 +43,16 @@ import Network.HTTP.Client (Request)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Types (HeaderName, QueryText, RequestHeaders)
 import Network.HTTP.Types.URI qualified as URI
+
+maybeToEither :: b -> Maybe a -> Either b a
+maybeToEither def = \case
+    Nothing -> Left def
+    Just x -> Right x
+
+resultToEither :: Json.Result a -> Either Str.Text a
+resultToEither = \case
+    Json.Error err -> Left $ Text.Str.pack err
+    Json.Success val -> Right val
 
 headerName :: Str.Text -> HeaderName
 headerName = CaseIns.mk . Text.Str.Enc.encodeUtf8

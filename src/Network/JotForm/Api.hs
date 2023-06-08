@@ -465,9 +465,7 @@ simplify response = do
     content <- case Json.Map.lookup (Json.Key.fromString "content") object of
         Just con -> Right con
         Nothing -> Left "response has no 'content' field"
-    case Json.fromJSON content of
-        Json.Success val -> Right val
-        Json.Error err -> Left $ Text.Str.pack err
+    Utils.resultToEither $ Json.fromJSON content
 
 -- | Run @simplify@ and throw an exception if it failed.
 simplifyIO :: FromJSON a => Response Value -> IO a
