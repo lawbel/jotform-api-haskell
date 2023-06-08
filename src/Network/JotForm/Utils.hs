@@ -58,12 +58,12 @@ updateHeaders modify request =
 encodeText :: ToJSON a => a -> Str.Text
 encodeText = Text.Lazy.toStrict . Json.Text.encodeToLazyText
 
--- | Convenience function - as we never need to render the '?' at the start
+-- | Convenience function - as we never need to render the \'?\' at the start
 -- of the query, it is easier to not have to specify that at every call site.
 renderQueryText :: QueryText -> Str.Text
 renderQueryText = Text.Str.Enc.decodeUtf8 . renderQueryBytes
 
-infixr 8 &=  -- same as (.=) from aeson
+infixr 8 &= -- same as (.=) from aeson
 (&=) :: k -> v -> (k, Maybe v)
 key &= value = (key, Just value)
 

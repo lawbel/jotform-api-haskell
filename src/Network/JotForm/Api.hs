@@ -456,7 +456,7 @@ defHistoryOpts =
         , sortBy = Nothing
         }
 
--- | Pull out the "content" field from a response body and return it.
+-- | Pull out the @\"content\"@ field from a response body and return it.
 simplify :: FromJSON a => Response Value -> Either Str.Text a
 simplify response = do
     object <- case Client.responseBody response of
