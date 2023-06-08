@@ -30,7 +30,8 @@ module Network.JotForm.Api
 
       -- *** \/submissions
 
-      -- | [GET \/user\/submissions](https://api.jotform.com/docs/#user-submissions)
+      -- | [GET \/user\/submissions]
+      -- (https://api.jotform.com/docs/#user-submissions)
     , getSubmissions
     , getSubmissions'
 
@@ -57,7 +58,8 @@ module Network.JotForm.Api
       -- | [GET \/user\/settings](https://api.jotform.com/docs/#user-settings)
     , getSettings
     , getSettings'
-      -- | [POST \/user\/settings](https://api.jotform.com/docs/#post-user-settings)
+      -- | [POST \/user\/settings]
+      -- (https://api.jotform.com/docs/#post-user-settings)
     , updateSettings
     , updateSettings'
 
@@ -77,46 +79,55 @@ module Network.JotForm.Api
 
       -- **** \/questions
 
-      -- | [GET \/form\/{id}\/questions](https://api.jotform.com/docs/#form-id-questions)
+      -- | [GET \/form\/{id}\/questions]
+      -- (https://api.jotform.com/docs/#form-id-questions)
     , getFormQuestions
     , getFormQuestions'
 
       -- **** \/question\/{qid}
 
-      -- | [GET \/form\/{id}\/question\/{qid}](https://api.jotform.com/docs/#form-id-question-id)
+      -- | [GET \/form\/{id}\/question\/{qid}]
+      -- (https://api.jotform.com/docs/#form-id-question-id)
     , getFormQuestion
     , getFormQuestion'
 
       -- **** \/submissions
 
-      -- | [GET \/form\/{id}\/submissions](https://api.jotform.com/docs/#form-id-submissions)
+      -- | [GET \/form\/{id}\/submissions]
+      -- (https://api.jotform.com/docs/#form-id-submissions)
     , getFormSubmissions
     , getFormSubmissions'
-      -- | [POST \/form\/{id}\/submissions](https://api.jotform.com/docs/#post-form-id-submissions)
+      -- | [POST \/form\/{id}\/submissions]
+      -- (https://api.jotform.com/docs/#post-form-id-submissions)
     , createFormSubmission
     , createFormSubmission'
-      -- | [PUT \/form\/{id}\/submissions](https://api.jotform.com/docs/#put-form-id-submissions)
+      -- | [PUT \/form\/{id}\/submissions]
+      -- (https://api.jotform.com/docs/#put-form-id-submissions)
     , createFormSubmissions
     , createFormSubmissions'
 
       -- **** \/files
 
-      -- | [GET \/form\/{id}\/files](https://api.jotform.com/docs/#form-id-files)
+      -- | [GET \/form\/{id}\/files]
+      -- (https://api.jotform.com/docs/#form-id-files)
     , getFormFiles
     , getFormFiles'
 
       -- **** \/webhooks
 
-      -- | [GET \/form\/{id}\/webhooks](https://api.jotform.com/docs/#form-id-webhooks)
+      -- | [GET \/form\/{id}\/webhooks]
+      -- (https://api.jotform.com/docs/#form-id-webhooks)
     , getFormWebhooks
     , getFormWebhooks'
-      -- | [POST \/form\/{id}\/webhooks](https://api.jotform.com/docs/#post-form-id-webhooks)
+      -- | [POST \/form\/{id}\/webhooks]
+      -- (https://api.jotform.com/docs/#post-form-id-webhooks)
     , createFormWebhook
     , createFormWebhook'
 
       -- ***** \/{whid}
 
-      -- | [DELETE \/form\/{id}\/webhooks\/{whid}](https://api.jotform.com/docs/#delete-form-id-webhooks)
+      -- | [DELETE \/form\/{id}\/webhooks\/{whid}]
+      -- (https://api.jotform.com/docs/#delete-form-id-webhooks)
     , deleteFormWebhook
     , deleteFormWebhook'
 
