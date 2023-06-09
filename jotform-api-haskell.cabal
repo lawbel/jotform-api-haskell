@@ -32,6 +32,8 @@ library
     build-depends:
           base ^>=4.16.4.0
         , bytestring ^>=0.11.4.0
+        , text ^>=1.2.5.0
+        , time ^>=1.11.1.1
         , http-client ^>=0.7.13.1
         , http-client-tls ^>=0.3.6.1
         , http-types ^>=0.12.3
@@ -54,4 +56,5 @@ test-suite examples
         , aeson-pretty ^>=0.8.9
         , optics-core ^>=0.4.1
         , bytestring
+        , text
         , jotform-api-haskell

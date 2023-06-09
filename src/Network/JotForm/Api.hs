@@ -1,4 +1,5 @@
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Network.JotForm.Api
     ( -- * Functions Provided #functions#
@@ -151,17 +152,17 @@ import Data.Aeson (FromJSON, Value)
 import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
-import Data.ByteString qualified as Byte.Str
-import Data.ByteString qualified as Str (ByteString)
-import Data.ByteString.Char8 qualified as Byte.Str.Char8
+import Data.Bifunctor (second)
 import Data.HashMap.Strict qualified as HashMap.Str
 import Data.HashMap.Strict qualified as Str (HashMap)
 import Data.String (IsString)
+import Data.Text qualified as Str (Text)
+import Data.Text qualified as Text.Str
+import Data.Time (Day)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
-import Network.HTTP.Types (Query)
+import Network.HTTP.Types (QueryText)
 import Network.HTTP.Types.Method qualified as Method
-import Network.HTTP.Types.URI qualified as URI
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
 import Network.JotForm.Utils qualified as Utils
@@ -250,13 +251,13 @@ import Network.JotForm.Utils qualified as Utils
 
 -- | A collection of key-value options.
 newtype Options = MkOptions
-    { unOptions :: Str.HashMap Str.ByteString Str.ByteString
+    { unOptions :: Str.HashMap Str.Text Str.Text
     }
     deriving (Eq, Ord, Show, Read)
 
-newtype ID ty = MkID {unID :: Str.ByteString}
+newtype ID ty = MkID {unID :: Str.Text}
     deriving (Eq, Ord, Show, Read)
-    deriving (IsString, Semigroup, Monoid) via Str.ByteString
+    deriving (IsString, Semigroup, Monoid) via Str.Text
 
 -- $tags
 --
@@ -284,7 +285,7 @@ data ListOptions = MkListOptions
     -- ^ Number of results in each result list.
     , filters :: Maybe Value
     -- ^ Filters the query results to fetch a specific submissions range.
-    , orderBy :: Maybe Str.ByteString
+    , orderBy :: Maybe Str.Text
     -- ^ Order results by a field name.
     }
     deriving (Eq, Ord, Show, Read)
@@ -292,17 +293,17 @@ data ListOptions = MkListOptions
 -- | A bundle of options are re-used in a couple of places in the API
 -- where it can potentially return a history\/queue of some type.
 data HistoryOptions = MkHistoryOptions
-    { action :: Maybe Str.ByteString
+    { action :: Maybe Str.Text
     -- ^ Filter results by activity performed. Default is \"all\".
-    , date :: Maybe Str.ByteString
+    , date :: Maybe Str.Text
     -- ^ Limit results by a date range. If you'd like to limit results by
     -- specific dates you can use 'startDate' and 'endDate' fields instead.
-    , sortBy :: Maybe Str.ByteString
+    , sortBy :: Maybe Str.Text
     -- ^ Lists results by ascending and descending order.
-    , startDate :: Maybe Str.ByteString
-    -- ^ Limit results to only after a specific date. Format: @MM\/DD\/YYYY@.
-    , endDate :: Maybe Str.ByteString
-    -- ^ Limit results to only before a specific date. Format: @MM\/DD\/YYYY@.
+    , startDate :: Maybe Day
+    -- ^ Limit results to only after a specific date.
+    , endDate :: Maybe Day
+    -- ^ Limit results to only before a specific date.
     }
     deriving (Eq, Ord, Show, Read)
 
@@ -317,42 +318,42 @@ defaultListOptions =
         , orderBy = Nothing
         }
 
--- | Conversion function from 'ListOptions' to 'Query' - not something that
+-- | Conversion function from 'ListOptions' to 'QueryText' - not something that
 -- end users will normally need, but provided just in case.
-listOptionsToQuery :: ListOptions -> Query
+listOptionsToQuery :: ListOptions -> QueryText
 listOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
         Just val -> pure (key, Just val)
   where
-    keys = Utils.ascii <$> ["offset", "limit", "filter", "orderby"]
+    keys = ["offset", "limit", "filter", "orderby"]
     vals =
-        [ Utils.showAscii <$> offset options
-        , Utils.showAscii <$> limit options
-        , Utils.encodeStrict <$> filters options
+        [ Utils.showText <$> offset options
+        , Utils.showText <$> limit options
+        , Utils.encodeText <$> filters options
         , orderBy options
         ]
 
--- | Conversion function from 'Options' to 'Query' - not something that
+-- | Conversion function from 'Options' to 'QueryText' - not something that
 -- end users will normally need, but provided just in case.
-optionsToQuery :: Options -> Query
-optionsToQuery = URI.simpleQueryToQuery . HashMap.Str.toList . unOptions
+optionsToQuery :: Options -> QueryText
+optionsToQuery = fmap (second Just) . HashMap.Str.toList . unOptions
 
-historyOptionsToQuery :: HistoryOptions -> Query
+historyOptionsToQuery :: HistoryOptions -> QueryText
 historyOptionsToQuery options = do
     (key, mVal) <- keys `zip` vals
     case mVal of
         Nothing -> empty
         Just val -> pure (key, Just val)
   where
-    keys = Utils.ascii <$> ["action", "date", "sortBy", "startDate", "endDate"]
+    keys = ["action", "date", "sortBy", "startDate", "endDate"]
     vals =
         [ action options
         , date options
         , sortBy options
-        , startDate options
-        , endDate options
+        , Utils.showDateJF <$> startDate options
+        , Utils.showDateJF <$> endDate options
         ]
 
 -- | A default 'HistoryOptions' value; it simply sets 'Nothing' as the
@@ -368,7 +369,7 @@ defaultHistoryOptions =
         }
 
 -- | Pull out the "content" field from a response body and return it.
-simplify :: FromJSON a => Response Value -> Either String a
+simplify :: FromJSON a => Response Value -> Either Str.Text a
 simplify response = do
     object <- case Client.responseBody response of
         Json.Object obj -> Right obj
@@ -378,7 +379,7 @@ simplify response = do
         Nothing -> Left "response has no 'content' field"
     case Json.fromJSON content of
         Json.Success val -> Right val
-        Json.Error err -> Left err
+        Json.Error err -> Left $ Text.Str.pack err
 
 -- | Run @simplify@ and throw an exception if it failed.
 simplifyIO :: FromJSON a => Response Value -> IO a
@@ -404,7 +405,7 @@ getUser client = getUser' client >>= simplifyIO
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user") Method.methodGet
+        Core.defaultParams "/user" Method.methodGet
 
 -- /user/usage
 
@@ -424,7 +425,7 @@ getUsage client = getUsage' client >>= simplifyIO
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user/usage") Method.methodGet
+        Core.defaultParams "/user/usage" Method.methodGet
 
 -- /user/forms
 
@@ -441,9 +442,9 @@ getForms' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getForms' client options =
     Core.fetchJson client $
         Core.MkParams
-            { Core.path = Utils.ascii "/user/forms"
+            { Core.path = "/user/forms"
             , Core.query = listOptionsToQuery options
-            , Core.body = Byte.Str.empty
+            , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
             }
@@ -463,9 +464,9 @@ getSubmissions' :: FromJSON a => ApiClient -> ListOptions -> IO (Response a)
 getSubmissions' client options =
     Core.fetchJson client $
         Core.MkParams
-            { Core.path = Utils.ascii "/user/submissions"
+            { Core.path = "/user/submissions"
             , Core.query = listOptionsToQuery options
-            , Core.body = Byte.Str.empty
+            , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
             }
@@ -483,7 +484,7 @@ getSubUsers client = getSubUsers' client >>= simplifyIO
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user/subusers") Method.methodGet
+        Core.defaultParams "/user/subusers" Method.methodGet
 
 -- /user/folders
 
@@ -498,7 +499,7 @@ getFolders client = getFolders' client >>= simplifyIO
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user/folders") Method.methodGet
+        Core.defaultParams "/user/folders" Method.methodGet
 
 -- /user/reports
 
@@ -514,7 +515,7 @@ getReports client = getReports' client >>= simplifyIO
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user/reports") Method.methodGet
+        Core.defaultParams "/user/reports" Method.methodGet
 
 -- /user/settings
 
@@ -529,7 +530,7 @@ getSettings client = getSettings' client >>= simplifyIO
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' client =
     Core.fetchJson client $
-        Core.defaultParams (Utils.ascii "/user/settings") Method.methodGet
+        Core.defaultParams "/user/settings" Method.methodGet
 
 -- | Update user's settings.
 --
@@ -549,9 +550,9 @@ updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
 updateSettings' client options =
     Core.fetchJson client $
         Core.MkParams
-            { Core.path = Utils.ascii "/user/settings"
+            { Core.path = "/user/settings"
             , Core.query = []
-            , Core.body = Utils.renderQuery $ optionsToQuery options
+            , Core.body = Utils.renderQueryText $ optionsToQuery options
             , Core.headers = [Core.urlEncode]
             , Core.method = Method.methodPost
             }
@@ -571,9 +572,9 @@ getHistory' :: FromJSON a => ApiClient -> HistoryOptions -> IO (Response a)
 getHistory' client options =
     Core.fetchJson client $
         Core.MkParams
-            { Core.path = Utils.ascii "/user/history"
+            { Core.path = "/user/history"
             , Core.query = historyOptionsToQuery options
-            , Core.body = Byte.Str.empty
+            , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
             }
@@ -599,7 +600,7 @@ getForm' client (MkID formID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> formID
+    path = "/form/" <> formID
 
 -- /form/{id}/questions
 
@@ -622,7 +623,7 @@ getFormQuestions' client (MkID formID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/questions"
+    path = "/form/" <> formID <> "/questions"
 
 -- /form/{id}/question/{qid}
 
@@ -650,7 +651,7 @@ getFormQuestion' client (MkID formID) (MkID qID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/question/" <> qID
+    path = "/form/" <> formID <> "/question/" <> qID
 
 -- /form/{id}/submissions
 
@@ -677,12 +678,12 @@ getFormSubmissions' client (MkID formID) options =
         Core.MkParams
             { Core.path = path
             , Core.query = listOptionsToQuery options
-            , Core.body = Byte.Str.empty
+            , Core.body = Text.Str.empty
             , Core.headers = []
             , Core.method = Method.methodGet
             }
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/submissions"
+    path = "/form/" <> formID <> "/submissions"
 
 -- | Submit data to this form using the API.
 --
@@ -708,27 +709,21 @@ createFormSubmission' client (MkID formID) submission =
         Core.MkParams
             { Core.path = path
             , Core.query = []
-            , Core.body = Utils.renderQuery query
+            , Core.body = Utils.renderQueryText query
             , Core.headers = [Core.urlEncode]
             , Core.method = Method.methodPost
             }
   where
     query = optionsToQuery $ mapKeys submission
     mapKeys = MkOptions . HashMap.Str.mapKeys questionName . unOptions
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/submissions"
+    path = "/form/" <> formID <> "/submissions"
 
-questionName :: Str.ByteString -> Str.ByteString
-questionName field = case Byte.Str.Char8.elemIndex '_' field of
+questionName :: Str.Text -> Str.Text
+questionName field = case Utils.elemIndexText '_' field of
     Just i ->
-        let (left, right) = Byte.Str.Char8.splitAt i field
-        in  mconcat
-                [ Utils.ascii "submission["
-                , left
-                , Utils.ascii "]["
-                , Byte.Str.Char8.drop 1 right
-                , Utils.ascii "]"
-                ]
-    Nothing -> Utils.ascii "submission[" <> field <> Utils.ascii "]"
+        let (left, right) = Text.Str.splitAt i field
+        in  "submission[" <> left <> "][" <> Text.Str.drop 1 right <> "]"
+    Nothing -> "submission[" <> field <> "]"
 
 -- | Submit data to this form using the API.
 --
@@ -754,12 +749,12 @@ createFormSubmissions' client (MkID formID) submissions =
         Core.MkParams
             { Core.path = path
             , Core.query = []
-            , Core.body = Utils.encodeStrict submissions
+            , Core.body = Utils.encodeText submissions
             , Core.headers = []
             , Core.method = Method.methodPut
             }
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/submissions"
+    path = "/form/" <> formID <> "/submissions"
 
 -- /form/{id}/files
 
@@ -782,7 +777,7 @@ getFormFiles' client (MkID formID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/files"
+    path = "/form/" <> formID <> "/files"
 
 -- /form/{id}/webhooks
 
@@ -805,7 +800,7 @@ getFormWebhooks' client (MkID formID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodGet
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/webhooks"
+    path = "/form/" <> formID <> "/webhooks"
 
 -- | Add a new webhook.
 --
@@ -816,7 +811,7 @@ createFormWebhook
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
     -- form IDs when you call 'getForms'.
-    -> Str.ByteString
+    -> Str.Text
     -- ^ Webhook URL where form data will be posted when form is submitted.
     -> IO a
 createFormWebhook client formID url =
@@ -825,19 +820,19 @@ createFormWebhook client formID url =
 -- | Non-simplified version of 'createFormWebhook' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 createFormWebhook'
-    :: FromJSON a => ApiClient -> ID Form -> Str.ByteString -> IO (Response a)
+    :: FromJSON a => ApiClient -> ID Form -> Str.Text -> IO (Response a)
 createFormWebhook' client (MkID formID) url =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = path
             , Core.query = []
-            , Core.body = Utils.renderQuery [query]
+            , Core.body = Utils.renderQueryText [query]
             , Core.headers = []
             , Core.method = Method.methodPost
             }
   where
-    query = (Utils.ascii "webhookURL", Just url)
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/webhooks"
+    query = ("webhookURL", Just url)
+    path = "/form/" <> formID <> "/webhooks"
 
 -- /form/{id}/webhooks/{whid}
 
@@ -864,4 +859,4 @@ deleteFormWebhook' client (MkID formID) (MkID whID) =
     Core.fetchJson client $
         Core.defaultParams path Method.methodDelete
   where
-    path = Utils.ascii "/form/" <> formID <> Utils.ascii "/webhooks/" <> whID
+    path = "/form/" <> formID <> "/webhooks/" <> whID
