@@ -61,7 +61,7 @@ import qualified Network.JotForm as JF  -- jotform-api-haskell
 
 main :: IO ()
 main = do
-    client <- JF.defaultApiClient "YOUR API KEY"
+    client <- JF.defApiClient "YOUR API KEY"
 
     let submissionFilter = object
             [ "created_at:gt" .= ("2020-02-20" :: String) ]
