@@ -24,16 +24,12 @@ getForms :: ApiClient -> IO ()
 getForms client = do
     forms :: [Value] <- JotForm.getForms client JotForm.defListOpts
     for_ forms $ \form -> do
-        let title = form ^? key "title" % _String
-        let total = form ^? key "count" % _String % _Integer
-        let new = form ^? key "new" % _String % _Integer
-        printf
-            "%s (total: %d, new: %d)\n"
-            (title `orElse` "null")
-            (total `orElse` 0)
-            (new `orElse` 0)
+        let title = (form ^? key "title" % _String) =? "-"
+        let total = (form ^? key "count" % _String % _Integer) =? 0
+        let new = (form ^? key "new" % _String % _Integer) =? 0
+        printf "%s (total: %d, new: %d)\n" title total new
   where
-    val `orElse` def = maybe def id val
+    optional =? def = maybe def id optional
 
 getLatestSubmissions :: ApiClient -> IO ()
 getLatestSubmissions client = do
