@@ -27,6 +27,7 @@ module Network.JotForm.Api
       -- | [GET \/user\/forms](https://api.jotform.com/docs/#user-usage)
     , getForms
     , getForms'
+    , getFormsByID
 
       -- *** \/submissions
 
@@ -175,18 +176,20 @@ module Network.JotForm.Api
 
 import Control.Applicative (empty)
 import Control.Exception (throwIO)
-import Data.Aeson (FromJSON, ToJSON, Value)
+import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey, Value)
 import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.Bifunctor (second)
 import Data.HashMap.Strict qualified as HashMap.Str
 import Data.HashMap.Strict qualified as Str (HashMap)
+import Data.Hashable (Hashable)
 import Data.String (IsString)
 import Data.Text qualified as Str (Text)
 import Data.Text qualified as Text.Str
 import Data.These (These (..))
 import Data.Time (Day)
+import Data.Traversable (for)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
 import Network.HTTP.Types (QueryText)
@@ -250,6 +253,8 @@ import Network.JotForm.Utils qualified as Utils
 -- | \/user\/usage                  | 'getUsage'           | -                      | -                       | -                   |
 -- +--------------------------------+----------------------+------------------------+-------------------------+---------------------+
 -- | \/user\/forms                  | 'getForms'           | -                      | -                       | -                   |
+-- |                                +----------------------+                        |                         |                     |
+-- |                                | 'getFormsByID'       |                        |                         |                     |
 -- +--------------------------------+----------------------+------------------------+-------------------------+---------------------+
 -- | \/user\/submissions            | 'getSubmissions'     | -                      | -                       | -                   |
 -- +--------------------------------+----------------------+------------------------+-------------------------+---------------------+
@@ -286,7 +291,17 @@ newtype Options = MkOptions
 
 newtype ID ty = MkID {unID :: Str.Text}
     deriving (Eq, Ord, Show, Read)
-    deriving (IsString, Semigroup, Monoid, FromJSON, ToJSON) via Str.Text
+    deriving
+        ( IsString
+        , Semigroup
+        , Monoid
+        , Hashable
+        , FromJSON
+        , FromJSONKey
+        , ToJSON
+        , ToJSONKey
+        )
+        via Str.Text
 
 -- $tags
 --
@@ -295,7 +310,7 @@ newtype ID ty = MkID {unID :: Str.Text}
 -- indicate what kind of ID is expected for the arguments to various functions.
 
 -- | The \'form ID\' is the numbers you see on a form URL. You can get
--- form IDs when you call 'getForms'.
+-- form IDs when you call 'getFormsByID' or 'getForms'.
 data Form
 
 data Question
@@ -546,6 +561,25 @@ getForms' client options =
             , Core.method = Method.methodGet
             }
 
+-- | An alternate version of 'getForms' which handles extracting the
+-- @'ID' 'Form'@ values from the result and strongly-typing them.
+getFormsByID
+    :: FromJSON a => ApiClient -> ListOpts -> IO (Str.HashMap (ID Form) a)
+getFormsByID client options = do
+    forms <- getForms client options
+    idValues <- for forms $ \form ->
+        case toIdValue form of
+            Left err -> throwIO $ Core.MkJsonException err
+            Right idValue -> pure idValue
+    pure $ HashMap.Str.fromList idValues
+  where
+    toIdValue object = do
+        let mJson = Json.Map.lookup "id" object
+        json <- Utils.maybeToEither "couldn't find key 'id'" mJson
+        formId <- Utils.resultToEither $ Json.fromJSON json
+        value <- Utils.resultToEither $ Json.fromJSON $ Json.Object object
+        pure (formId, value)
+
 -- /user/submissions
 
 -- | Get a list of submissions for this account.
@@ -686,7 +720,7 @@ getForm
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> IO a
 getForm client formID = getForm' client formID >>= simplifyIO
 
@@ -709,7 +743,7 @@ getFormQuestions
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> IO a
 getFormQuestions client formID = getFormQuestions' client formID >>= simplifyIO
 
@@ -732,7 +766,7 @@ getFormQuestion
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> ID Question
     -- ^ Identifier for each question on a form. You can get a list of
     -- question IDs from 'getFormQuestions'.
@@ -760,7 +794,7 @@ getFormSubmissions
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> ListOpts
     -> IO a
 getFormSubmissions client formID options =
@@ -790,7 +824,7 @@ createFormSubmission
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Options
     -- ^ Submission data with question IDs.
     -> IO a
@@ -830,7 +864,7 @@ createFormSubmissions
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Value
     -- ^ Submission data with question IDs.
     -> IO a
@@ -863,7 +897,7 @@ getFormFiles
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> IO a
 getFormFiles client formID = getFormFiles' client formID >>= simplifyIO
 
@@ -886,7 +920,7 @@ getFormWebhooks
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> IO a
 getFormWebhooks client formID = getFormWebhooks' client formID >>= simplifyIO
 
@@ -907,7 +941,7 @@ createFormWebhook
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Str.Text
     -- ^ Webhook URL where form data will be posted when form is submitted.
     -> IO a
@@ -941,7 +975,7 @@ deleteFormWebhook
     => ApiClient
     -> ID Form
     -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getForms'.
+    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> ID Webhook
     -- ^ You can get webhook IDs when you call 'getFormWebhooks'
     -> IO a
