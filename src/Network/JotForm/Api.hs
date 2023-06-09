@@ -184,9 +184,10 @@ module Network.JotForm.Api
 
 import Control.Applicative (empty)
 import Control.Exception (throwIO)
-import Data.Aeson (FromJSON, FromJSONKey, ToJSON, ToJSONKey, Value)
+import Data.Aeson (FromJSON, FromJSONKey, Key, ToJSON, ToJSONKey, Value)
 import Data.Aeson qualified as Json
 import Data.Aeson.Key qualified as Json.Key
+import Data.Aeson.KeyMap (KeyMap)
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.Bifunctor (second)
 import Data.HashMap.Strict qualified as HashMap.Str
@@ -573,20 +574,8 @@ getForms' client options =
 -- @'ID' 'Form'@ values from the result and strongly-typing them.
 getFormsByID
     :: FromJSON a => ApiClient -> ListOpts -> IO (Str.HashMap (ID Form) a)
-getFormsByID client options = do
-    forms <- getForms client options
-    idValues <- for forms $ \form ->
-        case toIdValue form of
-            Left err -> throwIO $ Core.MkJsonException err
-            Right idValue -> pure idValue
-    pure $ HashMap.Str.fromList idValues
-  where
-    toIdValue object = do
-        let mJson = Json.Map.lookup "id" object
-        json <- Utils.maybeToEither "couldn't find key 'id'" mJson
-        formId <- Utils.resultToEither $ Json.fromJSON json
-        value <- Utils.resultToEither $ Json.fromJSON $ Json.Object object
-        pure (formId, value)
+getFormsByID client options =
+    getForms client options >>= hashMapByKey "id"
 
 -- /user/submissions
 
@@ -999,3 +988,22 @@ deleteFormWebhook' client (MkID formID) (MkID whID) =
         Core.defParams path Method.methodDelete
   where
     path = "/form/" <> formID <> "/webhooks/" <> whID
+
+-- helpers
+
+hashMapByKey
+    :: FromJSON a => Key -> [KeyMap Value] -> IO (Str.HashMap (ID tag) a)
+hashMapByKey key objects = do
+    assocs <- for objects $ \object ->
+        case toIdValue object of
+            Left err -> throwIO $ Core.MkJsonException err
+            Right idValue -> pure idValue
+    pure $ HashMap.Str.fromList assocs
+  where
+    toIdValue object = do
+        let mJson = Json.Map.lookup key object
+        json <- Utils.maybeToEither errMsg mJson
+        objId <- Utils.resultToEither $ Json.fromJSON json
+        value <- Utils.resultToEither $ Json.fromJSON $ Json.Object object
+        pure (objId, value)
+    errMsg = "couldn't find key '" <> Json.Key.toText key <> "'"
