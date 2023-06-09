@@ -1,11 +1,11 @@
 cabal-version: 3.0
 name: jotform-api-haskell
-version: 0.1.0.0
+version: 0.1.1.0
 synopsis: Haskell bindings to the JotForm API
 license: BSD-3-Clause
 license-file: LICENSE
 author: Lawrence Bell
-category: Web
+category: Web, Network, API, Bindings
 build-type: Simple
 
 -- description:
