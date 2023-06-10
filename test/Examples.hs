@@ -15,6 +15,7 @@ import Data.Text.Encoding qualified as Text.Str.Enc
 import Network.JotForm (ApiClient)
 import Network.JotForm qualified as JotForm
 import Optics.Core ((%), (^?))
+import System.Exit (exitSuccess)
 import Text.Printf (printf)
 
 putJsonPretty :: ToJSON a => a -> IO ()
@@ -72,10 +73,17 @@ submissionAndFormFilters client = do
 --
 -- Depending on the file name, use 'JotForm.defaultApiClientEu'
 -- or 'JotForm.defaultApiClient'.
+--
+-- If neither file exists, simply quit without returning a failure exit code.
 getClient :: IO ApiClient
 getClient =
     getClientFrom "test-api-key-eu.txt" JotForm.defApiClientEu
         <|> getClientFrom "test-api-key.txt" JotForm.defApiClient
+        <|> exit
+  where
+    exit = do
+        putStrLn "no file 'test-api-key[-eu].txt'"
+        exitSuccess
 
 getClientFrom :: FilePath -> (Str.Text -> IO ApiClient) -> IO ApiClient
 getClientFrom fileName mkClient = do
