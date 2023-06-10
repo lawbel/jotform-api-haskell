@@ -972,12 +972,11 @@ createFormWebhook' client (MkID formID) url =
         Core.MkParams
             { Core.path = path
             , Core.query = []
-            , Core.body = Utils.renderQueryText [query]
+            , Core.body = Utils.renderQueryText ["webhookURL" &= url]
             , Core.headers = []
             , Core.method = Method.methodPost
             }
   where
-    query = ("webhookURL", Just url)
     path = "/form/" <> formID <> "/webhooks"
 
 -- /form/{id}/webhooks/{whid}
