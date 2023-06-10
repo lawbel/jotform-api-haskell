@@ -12,61 +12,68 @@ module Network.JotForm.Api
 
       -- ** \/user
 
-      -- | [GET \/user](https://api.jotform.com/docs/#user)
+      -- | Official docs: [GET \/user](https://api.jotform.com/docs/#user)
       getUser
     , getUser'
 
       -- *** \/usage
 
-      -- | [GET \/user\/usage](https://api.jotform.com/docs/#user-usage)
+      -- | Official docs: [GET \/user\/usage]
+      -- (https://api.jotform.com/docs/#user-usage)
     , getUsage
     , getUsage'
 
       -- *** \/forms
 
-      -- | [GET \/user\/forms](https://api.jotform.com/docs/#user-usage)
+      -- | Official docs: [GET \/user\/forms]
+      -- (https://api.jotform.com/docs/#user-usage)
     , getForms
     , getForms'
     , getFormsByID
 
       -- *** \/submissions
 
-      -- | [GET \/user\/submissions]
+      -- | Official docs: [GET \/user\/submissions]
       -- (https://api.jotform.com/docs/#user-submissions)
     , getSubmissions
     , getSubmissions'
 
       -- *** \/subusers
 
-      -- | [GET \/user\/subusers](https://api.jotform.com/docs/#user-subusers)
+      -- | Official docs: [GET \/user\/subusers]
+      -- (https://api.jotform.com/docs/#user-subusers)
     , getSubUsers
     , getSubUsers'
 
       -- *** \/folders
 
-      -- | [GET \/user\/folders](https://api.jotform.com/docs/#user-folders)
+      -- | Official docs: [GET \/user\/folders]
+      -- (https://api.jotform.com/docs/#user-folders)
     , getFolders
     , getFolders'
 
       -- *** \/reports
 
-      -- | [GET \/user\/reports](https://api.jotform.com/docs/#user-reports)
+      -- | Official docs: [GET \/user\/reports]
+      -- (https://api.jotform.com/docs/#user-reports)
     , getReports
     , getReports'
 
       -- *** \/settings
 
-      -- | [GET \/user\/settings](https://api.jotform.com/docs/#user-settings)
+      -- | Official docs: [GET \/user\/settings]
+      -- (https://api.jotform.com/docs/#user-settings)
     , getSettings
     , getSettings'
-      -- | [POST \/user\/settings]
+      -- | Official docs: [POST \/user\/settings]
       -- (https://api.jotform.com/docs/#post-user-settings)
     , updateSettings
     , updateSettings'
 
       -- *** \/history
 
-      -- | [GET \/user\/history](https://api.jotform.com/docs/#user-history)
+      -- | Official docs: [GET \/user\/history]
+      -- (https://api.jotform.com/docs/#user-history)
     , getHistory
     , getHistory'
 
@@ -74,60 +81,61 @@ module Network.JotForm.Api
 
       -- *** \/{id}
 
-      -- | [GET \/form\/{id}](https://api.jotform.com/docs/#form-id)
+      -- | Official docs: [GET \/form\/{id}]
+      -- (https://api.jotform.com/docs/#form-id)
     , getForm
     , getForm'
 
       -- **** \/questions
 
-      -- | [GET \/form\/{id}\/questions]
+      -- | Official docs: [GET \/form\/{id}\/questions]
       -- (https://api.jotform.com/docs/#form-id-questions)
     , getFormQuestions
     , getFormQuestions'
 
       -- **** \/question\/{qid}
 
-      -- | [GET \/form\/{id}\/question\/{qid}]
+      -- | Official docs: [GET \/form\/{id}\/question\/{qid}]
       -- (https://api.jotform.com/docs/#form-id-question-id)
     , getFormQuestion
     , getFormQuestion'
 
       -- **** \/submissions
 
-      -- | [GET \/form\/{id}\/submissions]
+      -- | Official docs: [GET \/form\/{id}\/submissions]
       -- (https://api.jotform.com/docs/#form-id-submissions)
     , getFormSubmissions
     , getFormSubmissions'
-      -- | [POST \/form\/{id}\/submissions]
+      -- | Official docs: [POST \/form\/{id}\/submissions]
       -- (https://api.jotform.com/docs/#post-form-id-submissions)
     , createFormSubmission
     , createFormSubmission'
-      -- | [PUT \/form\/{id}\/submissions]
+      -- | Official docs: [PUT \/form\/{id}\/submissions]
       -- (https://api.jotform.com/docs/#put-form-id-submissions)
     , createFormSubmissions
     , createFormSubmissions'
 
       -- **** \/files
 
-      -- | [GET \/form\/{id}\/files]
+      -- | Official docs: [GET \/form\/{id}\/files]
       -- (https://api.jotform.com/docs/#form-id-files)
     , getFormFiles
     , getFormFiles'
 
       -- **** \/webhooks
 
-      -- | [GET \/form\/{id}\/webhooks]
+      -- | Official docs: [GET \/form\/{id}\/webhooks]
       -- (https://api.jotform.com/docs/#form-id-webhooks)
     , getFormWebhooks
     , getFormWebhooks'
-      -- | [POST \/form\/{id}\/webhooks]
+      -- | Official docs: [POST \/form\/{id}\/webhooks]
       -- (https://api.jotform.com/docs/#post-form-id-webhooks)
     , createFormWebhook
     , createFormWebhook'
 
       -- ***** \/{whid}
 
-      -- | [DELETE \/form\/{id}\/webhooks\/{whid}]
+      -- | Official docs: [DELETE \/form\/{id}\/webhooks\/{whid}]
       -- (https://api.jotform.com/docs/#delete-form-id-webhooks)
     , deleteFormWebhook
     , deleteFormWebhook'
@@ -472,8 +480,8 @@ historyOptsToQuery options =
         , renderSortBy <$> sortBy options
         ]
 
--- | A default 'HistoryOpts' value; it simply sets 'Nothing'/'NoFilter' as the
--- value of each option, so that none of the options are specified.
+-- | A default 'HistoryOpts' value; it simply sets 'Nothing' / 'NoFilter' as
+-- the value of each option, so that none of the options are specified.
 defHistoryOpts :: HistoryOpts
 defHistoryOpts =
     MkHistoryOpts
