@@ -202,7 +202,7 @@ import Data.Time (Day)
 import Data.Traversable (for)
 import Network.HTTP.Client (Response)
 import Network.HTTP.Client qualified as Client
-import Network.HTTP.Types (QueryText)
+import Network.HTTP.Types (Method, QueryText)
 import Network.HTTP.Types.Method qualified as Method
 import Network.JotForm.Core (ApiClient)
 import Network.JotForm.Core qualified as Core
@@ -328,6 +328,7 @@ data Form
 -- | Identifier for each question on a form. You can get a list of
 -- question IDs from 'getFormQuestionsByID' or 'getFormQuestions'.
 data Question
+
 data Webhook
 
 -- | A bundle of options that are re-used in a couple of places in the API
@@ -529,9 +530,7 @@ getUser client = getUser' client >>= simplifyIO
 -- | Non-simplified version of 'getUser' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
-getUser' client =
-    Core.fetchJson client $
-        Core.defParams "/user" Method.methodGet
+getUser' = basicRequest "/user" Method.methodGet
 
 -- /user/usage
 
@@ -549,9 +548,7 @@ getUsage client = getUsage' client >>= simplifyIO
 -- | Non-simplified version of 'getUsage' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
-getUsage' client =
-    Core.fetchJson client $
-        Core.defParams "/user/usage" Method.methodGet
+getUsage' = basicRequest "/user/usage" Method.methodGet
 
 -- /user/forms
 
@@ -615,9 +612,7 @@ getSubUsers client = getSubUsers' client >>= simplifyIO
 -- | Non-simplified version of 'getSubUsers' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
-getSubUsers' client =
-    Core.fetchJson client $
-        Core.defParams "/user/subusers" Method.methodGet
+getSubUsers' = basicRequest "/user/subusers" Method.methodGet
 
 -- /user/folders
 
@@ -630,9 +625,7 @@ getFolders client = getFolders' client >>= simplifyIO
 -- | Non-simplified version of 'getFolders' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
-getFolders' client =
-    Core.fetchJson client $
-        Core.defParams "/user/folders" Method.methodGet
+getFolders' = basicRequest "/user/folders" Method.methodGet
 
 -- /user/reports
 
@@ -646,9 +639,7 @@ getReports client = getReports' client >>= simplifyIO
 -- | Non-simplified version of 'getReports' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
-getReports' client =
-    Core.fetchJson client $
-        Core.defParams "/user/reports" Method.methodGet
+getReports' = basicRequest "/user/reports" Method.methodGet
 
 -- /user/settings
 
@@ -661,9 +652,7 @@ getSettings client = getSettings' client >>= simplifyIO
 -- | Non-simplified version of 'getSettings' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
-getSettings' client =
-    Core.fetchJson client $
-        Core.defParams "/user/settings" Method.methodGet
+getSettings' = basicRequest "/user/settings" Method.methodGet
 
 -- | Update user's settings.
 --
@@ -1024,3 +1013,8 @@ hashMapByKey key objects = do
         value <- Utils.resultToEither $ Json.fromJSON $ Json.Object object
         pure (objId, value)
     errMsg = "couldn't find key '" <> Json.Key.toText key <> "'"
+
+basicRequest
+    :: FromJSON a => Str.Text -> Method -> ApiClient -> IO (Response a)
+basicRequest path method client =
+    Core.fetchJson client $ Core.defParams path method
