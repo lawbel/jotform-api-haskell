@@ -191,9 +191,8 @@ import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap (KeyMap)
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.Bifunctor (second)
-import Data.HashMap.Strict qualified as HashMap.Str
-import Data.HashMap.Strict qualified as Str (HashMap)
-import Data.Hashable (Hashable)
+import Data.Map.Strict qualified as Str (Map)
+import Data.Map.Strict qualified as Map.Str
 import Data.String (IsString)
 import Data.Text qualified as Str (Text)
 import Data.Text qualified as Text.Str
@@ -297,7 +296,7 @@ import Network.JotForm.Utils qualified as Utils
 
 -- | A collection of key-value options.
 newtype Options = MkOptions
-    { unOptions :: Str.HashMap Str.Text Str.Text
+    { unOptions :: Str.Map Str.Text Str.Text
     }
     deriving (Eq, Ord, Show, Read)
 
@@ -307,7 +306,6 @@ newtype ID ty = MkID {unID :: Str.Text}
         ( IsString
         , Semigroup
         , Monoid
-        , Hashable
         , FromJSON
         , FromJSONKey
         , ToJSON
@@ -470,7 +468,7 @@ listOptsToQuery options = do
 -- | Conversion function from 'Options' to 'QueryText' - not something that
 -- end users will normally need, but provided just in case.
 optionsToQuery :: Options -> QueryText
-optionsToQuery = fmap (second Just) . HashMap.Str.toList . unOptions
+optionsToQuery = fmap (second Just) . Map.Str.toList . unOptions
 
 historyOptsToQuery :: HistoryOpts -> QueryText
 historyOptsToQuery options =
@@ -573,9 +571,9 @@ getFormsByID
     :: FromJSON a
     => ApiClient
     -> ListOpts
-    -> IO (Str.HashMap (ID Form) a)
+    -> IO (Str.Map (ID Form) a)
 getFormsByID client options =
-    getForms client options >>= hashMapByKey "id"
+    getForms client options >>= mapByKey "id"
 
 -- /user/submissions
 
@@ -733,10 +731,10 @@ getFormQuestionsByID
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -> IO (Str.HashMap (ID Question) a)
+    -> IO (Str.Map (ID Question) a)
 getFormQuestionsByID client formID = do
     questions <- getFormQuestions client formID
-    hashMapByKey "qid" $ Json.Map.elems questions
+    mapByKey "qid" $ Json.Map.elems questions
 
 -- /form/{id}/question/{qid}
 
@@ -819,7 +817,7 @@ createFormSubmission' client (MkID formID) submission =
             }
   where
     query = optionsToQuery $ mapKeys submission
-    mapKeys = MkOptions . HashMap.Str.mapKeys questionName . unOptions
+    mapKeys = MkOptions . Map.Str.mapKeys questionName . unOptions
     path = "/form/" <> formID <> "/submissions"
 
 questionName :: Str.Text -> Str.Text
@@ -952,14 +950,14 @@ deleteFormWebhook' client (MkID formID) (MkID whID) =
 
 -- helpers
 
-hashMapByKey
-    :: FromJSON a => Key -> [KeyMap Value] -> IO (Str.HashMap (ID tag) a)
-hashMapByKey key objects = do
+mapByKey
+    :: FromJSON a => Key -> [KeyMap Value] -> IO (Str.Map (ID tag) a)
+mapByKey key objects = do
     assocs <- for objects $ \object ->
         case toIdValue object of
             Left err -> throwIO $ Core.MkJsonException err
             Right idValue -> pure idValue
-    pure $ HashMap.Str.fromList assocs
+    pure $ Map.Str.fromList assocs
   where
     toIdValue object = do
         let mJson = Json.Map.lookup key object
