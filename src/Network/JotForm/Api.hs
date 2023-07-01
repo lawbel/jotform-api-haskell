@@ -514,9 +514,8 @@ simplifyIO = either (throwIO . Core.MkJsonException) pure . simplify
 
 -- /user
 
--- | Get user account details for a JotForm user.
---
--- Returns a variety of information, including:
+-- | Get user account details for a JotForm user. Returns a variety of
+-- information, including:
 --
 -- * user account type
 -- * avatar URL
@@ -527,16 +526,14 @@ simplifyIO = either (throwIO . Core.MkJsonException) pure . simplify
 getUser :: FromJSON a => ApiClient -> IO a
 getUser client = getUser' client >>= simplifyIO
 
--- | Non-simplified version of 'getUser' - see note
+-- | Alternate version of 'getUser' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
 getUser' = basicRequest "/user" Method.methodGet
 
 -- /user/usage
 
--- | Get number of form submissions received this month.
---
--- Returns:
+-- | Get number of form submissions received this month. Returns:
 --
 -- * number of submissions
 -- * number of SSL form submissions
@@ -545,21 +542,19 @@ getUser' = basicRequest "/user" Method.methodGet
 getUsage :: FromJSON a => ApiClient -> IO a
 getUsage client = getUsage' client >>= simplifyIO
 
--- | Non-simplified version of 'getUsage' - see note
+-- | Alternate version of 'getUsage' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
 getUsage' = basicRequest "/user/usage" Method.methodGet
 
 -- /user/forms
 
--- | Get a list of forms for this account.
---
--- Returns: basic details such as title of the form, when it was created,
--- number of new and total submissions.
+-- | Get a list of forms for this account. Returns basic details such as title
+-- of the form, when it was created, number of new and total submissions.
 getForms :: FromJSON a => ApiClient -> ListOpts -> IO a
 getForms client options = getForms' client options >>= simplifyIO
 
--- | Non-simplified version of 'getForms' - see note
+-- | Alternate version of 'getForms' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getForms' :: FromJSON a => ApiClient -> ListOpts -> IO (Response a)
 getForms' client options =
@@ -575,20 +570,21 @@ getForms' client options =
 -- | An alternate version of 'getForms' which handles extracting the
 -- @'ID' 'Form'@ values from the result and strongly-typing them.
 getFormsByID
-    :: FromJSON a => ApiClient -> ListOpts -> IO (Str.HashMap (ID Form) a)
+    :: FromJSON a
+    => ApiClient
+    -> ListOpts
+    -> IO (Str.HashMap (ID Form) a)
 getFormsByID client options =
     getForms client options >>= hashMapByKey "id"
 
 -- /user/submissions
 
--- | Get a list of submissions for this account.
---
--- Returns: basic details such as title of the form, when it was created,
--- number of new and total submissions.
+-- | Get a list of submissions for this account. Returns basic details such as
+-- title of the form, when it was created, number of new and total submissions.
 getSubmissions :: FromJSON a => ApiClient -> ListOpts -> IO a
 getSubmissions client options = getSubmissions' client options >>= simplifyIO
 
--- | Non-simplified version of 'getSubmissions' - see note
+-- | Alternate version of 'getSubmissions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSubmissions' :: FromJSON a => ApiClient -> ListOpts -> IO (Response a)
 getSubmissions' client options =
@@ -603,40 +599,36 @@ getSubmissions' client options =
 
 -- /user/subusers
 
--- | Get a list of sub users for this account.
---
--- Returns: list of forms and form folders with access privileges.
+-- | Get a list of sub users for this account. Returns a list of forms
+-- and form folders with access privileges.
 getSubUsers :: FromJSON a => ApiClient -> IO a
 getSubUsers client = getSubUsers' client >>= simplifyIO
 
--- | Non-simplified version of 'getSubUsers' - see note
+-- | Alternate version of 'getSubUsers' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
 getSubUsers' = basicRequest "/user/subusers" Method.methodGet
 
 -- /user/folders
 
--- | Get a list of form folders for this account.
---
--- Returns: name of the folder and owner of the folder for shared folders.
+-- | Get a list of form folders for this account. Returns the name of the
+-- folder and owner of the folder for shared folders.
 getFolders :: FromJSON a => ApiClient -> IO a
 getFolders client = getFolders' client >>= simplifyIO
 
--- | Non-simplified version of 'getFolders' - see note
+-- | Alternate version of 'getFolders' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
 getFolders' = basicRequest "/user/folders" Method.methodGet
 
 -- /user/reports
 
--- | List of URLS for reports in this account.
---
--- Returns: reports for all of the forms. ie. Excel, CSV, printable
--- charts, embeddable HTML tables.
+-- | List of URLS for reports in this account. Returns reports for all of
+-- the forms: Excel, CSV, printable charts, embeddable HTML tables.
 getReports :: FromJSON a => ApiClient -> IO a
 getReports client = getReports' client >>= simplifyIO
 
--- | Non-simplified version of 'getReports' - see note
+-- | Alternate version of 'getReports' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
 getReports' = basicRequest "/user/reports" Method.methodGet
@@ -644,19 +636,15 @@ getReports' = basicRequest "/user/reports" Method.methodGet
 -- /user/settings
 
 -- | Get user's settings for this account.
---
--- Returns: user's time zone and language.
 getSettings :: FromJSON a => ApiClient -> IO a
 getSettings client = getSettings' client >>= simplifyIO
 
--- | Non-simplified version of 'getSettings' - see note
+-- | Alternate version of 'getSettings' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' = basicRequest "/user/settings" Method.methodGet
 
--- | Update user's settings.
---
--- Returns: changes on user settings.
+-- | Update user's settings. Returns changes on user settings.
 updateSettings
     :: FromJSON a
     => ApiClient
@@ -666,7 +654,7 @@ updateSettings
 updateSettings client options =
     updateSettings' client options >>= simplifyIO
 
--- | Non-simplified version of 'updateSettings' - see note
+-- | Alternate version of 'updateSettings' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
 updateSettings' client options =
@@ -681,14 +669,12 @@ updateSettings' client options =
 
 -- /user/history
 
--- | Get user activity log.
---
--- Returns: activity log about things like forms created\/modified\/deleted,
--- account logins and other operations.
+-- | Get user activity log. Returns things like forms
+-- created\/modified\/deleted, account logins and other operations.
 getHistory :: FromJSON a => ApiClient -> HistoryOpts -> IO a
 getHistory client options = getHistory' client options >>= simplifyIO
 
--- | Non-simplified version of 'getHistory' - see note
+-- | Alternate version of 'getHistory' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getHistory' :: FromJSON a => ApiClient -> HistoryOpts -> IO (Response a)
 getHistory' client options =
@@ -703,19 +689,15 @@ getHistory' client options =
 
 -- /form/{id}
 
--- | Get basic information about a form.
+-- | Get basic information about a form - form ID, status, update and
+-- creation dates, submission count etc.
 --
--- Returns: form ID, status, update and creation dates, submission count etc.
-getForm
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+getForm :: FromJSON a => ApiClient -> ID Form -> IO a
 getForm client formID = getForm' client formID >>= simplifyIO
 
--- | Non-simplified version of 'getForm' - see note
+-- | Alternate version of 'getForm' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getForm' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getForm' client (MkID formID) =
@@ -728,17 +710,12 @@ getForm' client (MkID formID) =
 
 -- | Get a list of all questions on a form.
 --
--- Returns: question properties of a form.
-getFormQuestions
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+getFormQuestions :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormQuestions client formID = getFormQuestions' client formID >>= simplifyIO
 
--- | Non-simplified version of 'getFormQuestions' - see note
+-- | Alternate version of 'getFormQuestions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormQuestions' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormQuestions' client (MkID formID) =
@@ -749,12 +726,13 @@ getFormQuestions' client (MkID formID) =
 
 -- | An alternate version of 'getFormQuestions' which handles extracting the
 -- @'ID' 'Question'@ values from the result and strongly-typing them.
+--
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
 getFormQuestionsByID
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> IO (Str.HashMap (ID Question) a)
 getFormQuestionsByID client formID = do
     questions <- getFormQuestions client formID
@@ -762,23 +740,20 @@ getFormQuestionsByID client formID = do
 
 -- /form/{id}/question/{qid}
 
--- | Get details about a question.
+-- | Returns details about a question like whether it is required and if
+-- there is any validation.
 --
--- Returns: question properties like required and validation.
-getFormQuestion
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> ID Question
-    -- ^ Identifier for each question on a form. You can get a list of
-    -- question IDs from 'getFormQuestionsByID' or 'getFormQuestions'.
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+--
+-- Similarly, the 'ID' of a 'Question' is an identifier for each question
+-- on a form. You can get a list of question IDs from 'getFormQuestionsByID'
+-- or 'getFormQuestions'.
+getFormQuestion :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO a
 getFormQuestion client formID qID =
     getFormQuestion' client formID qID >>= simplifyIO
 
--- | Non-simplified version of 'getFormQuestion' - see note
+-- | Alternate version of 'getFormQuestion' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormQuestion'
     :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO (Response a)
@@ -790,21 +765,15 @@ getFormQuestion' client (MkID formID) (MkID qID) =
 
 -- /form/{id}/submissions
 
--- | List of a form submissions.
+-- | Returns submissions of a specific form.
 --
--- Returns: submissions of a specific form.
-getFormSubmissions
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> ListOpts
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+getFormSubmissions :: FromJSON a => ApiClient -> ID Form -> ListOpts -> IO a
 getFormSubmissions client formID options =
     getFormSubmissions' client formID options >>= simplifyIO
 
--- | Non-simplified version of 'getFormSubmissions' - see note
+-- | Alternate version of 'getFormSubmissions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormSubmissions'
     :: FromJSON a => ApiClient -> ID Form -> ListOpts -> IO (Response a)
@@ -820,22 +789,22 @@ getFormSubmissions' client (MkID formID) options =
   where
     path = "/form/" <> formID <> "/submissions"
 
--- | Submit data to this form using the API.
+-- | Submit data to this form using the API. Returns posted submission ID
+-- and URL.
 --
--- Returns: posted submission ID and URL.
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
 createFormSubmission
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Options
     -- ^ Submission data with question IDs.
     -> IO a
 createFormSubmission client formID submission =
     createFormSubmission' client formID submission >>= simplifyIO
 
--- | Non-simplified version of 'createFormSubmission' - see note
+-- | Alternate version of 'createFormSubmission' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 createFormSubmission'
     :: FromJSON a => ApiClient -> ID Form -> Options -> IO (Response a)
@@ -860,22 +829,22 @@ questionName field = case Utils.elemIndexText '_' field of
         in  "submission[" <> left <> "][" <> Text.Str.drop 1 right <> "]"
     Nothing -> "submission[" <> field <> "]"
 
--- | Submit data to this form using the API.
+-- | Submit data to this form using the API. Returns posted submission ID
+-- and URL.
 --
--- Returns: posted submission ID and URL.
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
 createFormSubmissions
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Value
     -- ^ Submission data with question IDs.
     -> IO a
 createFormSubmissions client formID submissions =
     createFormSubmissions' client formID submissions >>= simplifyIO
 
--- | Non-simplified version of 'createFormSubmissions' - see note
+-- | Alternate version of 'createFormSubmissions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 createFormSubmissions'
     :: FromJSON a => ApiClient -> ID Form -> Value -> IO (Response a)
@@ -893,19 +862,15 @@ createFormSubmissions' client (MkID formID) submissions =
 
 -- /form/{id}/files
 
--- | List of files uploaded on a form.
+-- | List of files uploaded on a form. Returns uploaded file information
+-- and URLs on a specific form.
 --
--- Returns: uploaded file information and URLs on a specific form.
-getFormFiles
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+getFormFiles :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormFiles client formID = getFormFiles' client formID >>= simplifyIO
 
--- | Non-simplified version of 'getFormFiles' - see note
+-- | Alternate version of 'getFormFiles' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormFiles' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormFiles' client (MkID formID) =
@@ -918,17 +883,12 @@ getFormFiles' client (MkID formID) =
 
 -- | Get list of webhooks for a form.
 --
--- Returns: list of webhooks for a specific form.
-getFormWebhooks
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> IO a
+-- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+getFormWebhooks :: FromJSON a => ApiClient -> ID Form -> IO a
 getFormWebhooks client formID = getFormWebhooks' client formID >>= simplifyIO
 
--- | Non-simplified version of 'getFormWebhooks' - see note
+-- | Alternate version of 'getFormWebhooks' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormWebhooks' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
 getFormWebhooks' client (MkID formID) =
@@ -937,22 +897,21 @@ getFormWebhooks' client (MkID formID) =
   where
     path = "/form/" <> formID <> "/webhooks"
 
--- | Add a new webhook.
+-- | Add a new webhook. Returns list of webhooks for a specific form.
 --
--- Returns: list of webhooks for a specific form.
+-- The 'ID of a 'Form' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
 createFormWebhook
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
     -> Str.Text
     -- ^ Webhook URL where form data will be posted when form is submitted.
     -> IO a
 createFormWebhook client formID url =
     createFormWebhook' client formID url >>= simplifyIO
 
--- | Non-simplified version of 'createFormWebhook' - see note
+-- | Alternate version of 'createFormWebhook' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 createFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> Str.Text -> IO (Response a)
@@ -970,22 +929,18 @@ createFormWebhook' client (MkID formID) url =
 
 -- /form/{id}/webhooks/{whid}
 
--- | Delete a specific webhook of a form.
+-- | Delete a specific webhook of a form. Returns remaining webhook URLs of
+-- the form.
 --
--- Returns: remaining webhook URLs of form.
-deleteFormWebhook
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -- ^ \'Form ID\' is the numbers you see on a form URL. You can get
-    -- form IDs when you call 'getFormsByID' or 'getForms'.
-    -> ID Webhook
-    -- ^ You can get webhook IDs when you call 'getFormWebhooks'
-    -> IO a
+-- The 'ID' of a \'Form \' is the numbers you see on a form URL. You can get
+-- form IDs when you call 'getFormsByID' or 'getForms'.
+--
+-- You can get webhook IDs when you call 'getFormWebhooks'
+deleteFormWebhook :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO a
 deleteFormWebhook client formID whID =
     deleteFormWebhook' client formID whID >>= simplifyIO
 
--- | Non-simplified version of 'deleteFormWebhook' - see note
+-- | Alternate version of 'deleteFormWebhook' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 deleteFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO (Response a)
