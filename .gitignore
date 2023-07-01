@@ -1,6 +1,7 @@
 dist-newstyle/
 result
 .vscode/
+.direnv/
 
 test-api-key.txt
 test-api-key-eu.txt
