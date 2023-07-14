@@ -527,7 +527,7 @@ getUser client = getUser' client >>= simplifyIO
 -- | Alternate version of 'getUser' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUser' :: FromJSON a => ApiClient -> IO (Response a)
-getUser' = basicRequest "/user" Method.methodGet
+getUser' = basicGet "/user"
 
 -- /user/usage
 
@@ -543,7 +543,7 @@ getUsage client = getUsage' client >>= simplifyIO
 -- | Alternate version of 'getUsage' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getUsage' :: FromJSON a => ApiClient -> IO (Response a)
-getUsage' = basicRequest "/user/usage" Method.methodGet
+getUsage' = basicGet "/user/usage"
 
 -- /user/forms
 
@@ -605,7 +605,7 @@ getSubUsers client = getSubUsers' client >>= simplifyIO
 -- | Alternate version of 'getSubUsers' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSubUsers' :: FromJSON a => ApiClient -> IO (Response a)
-getSubUsers' = basicRequest "/user/subusers" Method.methodGet
+getSubUsers' = basicGet "/user/subusers"
 
 -- /user/folders
 
@@ -617,7 +617,7 @@ getFolders client = getFolders' client >>= simplifyIO
 -- | Alternate version of 'getFolders' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFolders' :: FromJSON a => ApiClient -> IO (Response a)
-getFolders' = basicRequest "/user/folders" Method.methodGet
+getFolders' = basicGet "/user/folders"
 
 -- /user/reports
 
@@ -629,7 +629,7 @@ getReports client = getReports' client >>= simplifyIO
 -- | Alternate version of 'getReports' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getReports' :: FromJSON a => ApiClient -> IO (Response a)
-getReports' = basicRequest "/user/reports" Method.methodGet
+getReports' = basicGet "/user/reports"
 
 -- /user/settings
 
@@ -640,7 +640,7 @@ getSettings client = getSettings' client >>= simplifyIO
 -- | Alternate version of 'getSettings' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
-getSettings' = basicRequest "/user/settings" Method.methodGet
+getSettings' = basicGet "/user/settings"
 
 -- | Update user's settings. Returns changes on user settings.
 updateSettings
@@ -698,9 +698,7 @@ getForm client formID = getForm' client formID >>= simplifyIO
 -- | Alternate version of 'getForm' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getForm' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
-getForm' client (MkID formID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodGet
+getForm' client (MkID formID) = basicGet path client
   where
     path = "/form/" <> formID
 
@@ -716,9 +714,7 @@ getFormQuestions client formID = getFormQuestions' client formID >>= simplifyIO
 -- | Alternate version of 'getFormQuestions' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormQuestions' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
-getFormQuestions' client (MkID formID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodGet
+getFormQuestions' client (MkID formID) = basicGet path client
   where
     path = "/form/" <> formID <> "/questions"
 
@@ -755,9 +751,7 @@ getFormQuestion client formID qID =
 -- [here]("Network.JotForm.Api#g:functions").
 getFormQuestion'
     :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO (Response a)
-getFormQuestion' client (MkID formID) (MkID qID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodGet
+getFormQuestion' client (MkID formID) (MkID qID) = basicGet path client
   where
     path = "/form/" <> formID <> "/question/" <> qID
 
@@ -871,9 +865,7 @@ getFormFiles client formID = getFormFiles' client formID >>= simplifyIO
 -- | Alternate version of 'getFormFiles' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormFiles' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
-getFormFiles' client (MkID formID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodGet
+getFormFiles' client (MkID formID) = basicGet path client
   where
     path = "/form/" <> formID <> "/files"
 
@@ -889,9 +881,7 @@ getFormWebhooks client formID = getFormWebhooks' client formID >>= simplifyIO
 -- | Alternate version of 'getFormWebhooks' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 getFormWebhooks' :: FromJSON a => ApiClient -> ID Form -> IO (Response a)
-getFormWebhooks' client (MkID formID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodGet
+getFormWebhooks' client (MkID formID) = basicGet path client
   where
     path = "/form/" <> formID <> "/webhooks"
 
@@ -942,9 +932,7 @@ deleteFormWebhook client formID whID =
 -- [here]("Network.JotForm.Api#g:functions").
 deleteFormWebhook'
     :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO (Response a)
-deleteFormWebhook' client (MkID formID) (MkID whID) =
-    Core.fetchJson client $
-        Core.defParams path Method.methodDelete
+deleteFormWebhook' client (MkID formID) (MkID whID) = basicDelete path client
   where
     path = "/form/" <> formID <> "/webhooks/" <> whID
 
@@ -971,3 +959,9 @@ basicRequest
     :: FromJSON a => Str.Text -> Method -> ApiClient -> IO (Response a)
 basicRequest path method client =
     Core.fetchJson client $ Core.defParams path method
+
+basicGet :: FromJSON a => Str.Text -> ApiClient -> IO (Response a)
+basicGet path = basicRequest path Method.methodGet
+
+basicDelete :: FromJSON a => Str.Text -> ApiClient -> IO (Response a)
+basicDelete path = basicRequest path Method.methodDelete
