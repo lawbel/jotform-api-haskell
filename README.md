@@ -86,7 +86,7 @@ To run a test suite with equivalent code from the above examples:
 ## Nix
 
 For those so inclined, there is a `flake.nix` file set up. So you can
-do (amongt other things):
+do (amongst other things):
 
 - `nix develop` to get a development shell
 - `nix develop --command $EDITOR` to open your editor of choice, with all the
