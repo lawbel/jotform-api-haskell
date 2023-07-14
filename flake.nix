@@ -12,10 +12,8 @@
       perSystem = { self', pkgs, ... }: {
         packages.default = self'.packages.jotform-api-haskell;
         haskellProjects.default = {
-          devShell = {
-            tools = haskell: {
-              fourmolu = haskell.fourmolu;
-            };
+          devShell.tools = hsPkgs: {
+            inherit (hsPkgs) fourmolu;
           };
         };
       };
