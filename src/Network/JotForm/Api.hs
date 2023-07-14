@@ -191,8 +191,8 @@ import Data.Aeson.Key qualified as Json.Key
 import Data.Aeson.KeyMap (KeyMap)
 import Data.Aeson.KeyMap qualified as Json.Map
 import Data.Bifunctor (second)
-import Data.Map.Strict qualified as Str (Map)
 import Data.Map.Strict qualified as Map.Str
+import Data.Map.Strict qualified as Str (Map)
 import Data.String (IsString)
 import Data.Text qualified as Str (Text)
 import Data.Text qualified as Text.Str
@@ -572,8 +572,7 @@ getFormsByID
     => ApiClient
     -> ListOpts
     -> IO (Str.Map (ID Form) a)
-getFormsByID client options =
-    getForms client options >>= mapByKey "id"
+getFormsByID client options = getForms client options >>= mapByKey "id"
 
 -- /user/submissions
 
@@ -743,7 +742,8 @@ getFormQuestionsByID client formID = do
 -- Similarly, the 'ID' of a 'Question' is an identifier for each question
 -- on a form. You can get a list of question IDs from 'getFormQuestionsByID'
 -- or 'getFormQuestions'.
-getFormQuestion :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO a
+getFormQuestion
+    :: FromJSON a => ApiClient -> ID Form -> ID Question -> IO a
 getFormQuestion client formID qID =
     getFormQuestion' client formID qID >>= simplifyIO
 
@@ -761,7 +761,8 @@ getFormQuestion' client (MkID formID) (MkID qID) = basicGet path client
 --
 -- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
 -- form IDs when you call 'getFormsByID' or 'getForms'.
-getFormSubmissions :: FromJSON a => ApiClient -> ID Form -> ListOpts -> IO a
+getFormSubmissions
+    :: FromJSON a => ApiClient -> ID Form -> ListOpts -> IO a
 getFormSubmissions client formID options =
     getFormSubmissions' client formID options >>= simplifyIO
 
@@ -890,12 +891,7 @@ getFormWebhooks' client (MkID formID) = basicGet path client
 -- The 'ID of a 'Form' is the numbers you see on a form URL. You can get
 -- form IDs when you call 'getFormsByID' or 'getForms'.
 createFormWebhook
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -> Str.Text
-    -- ^ Webhook URL where form data will be posted when form is submitted.
-    -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> Str.Text -> IO a
 createFormWebhook client formID url =
     createFormWebhook' client formID url >>= simplifyIO
 
@@ -924,7 +920,8 @@ createFormWebhook' client (MkID formID) url =
 -- form IDs when you call 'getFormsByID' or 'getForms'.
 --
 -- You can get webhook IDs when you call 'getFormWebhooks'
-deleteFormWebhook :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO a
+deleteFormWebhook
+    :: FromJSON a => ApiClient -> ID Form -> ID Webhook -> IO a
 deleteFormWebhook client formID whID =
     deleteFormWebhook' client formID whID >>= simplifyIO
 
