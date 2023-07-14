@@ -641,28 +641,34 @@ getSettings client = getSettings' client >>= simplifyIO
 getSettings' :: FromJSON a => ApiClient -> IO (Response a)
 getSettings' = basicGet "/user/settings"
 
--- | Update user's settings. Returns changes on user settings.
+-- | Update user's settings. Returns changes on user settings. Pass new
+-- user settings as a 'Str.Map' from keys to values.
 updateSettings
     :: FromJSON a
     => ApiClient
-    -> Options
-    -- ^ New user settings, specified as keys and values.
+    -> Str.Map Str.Text Str.Text
     -> IO a
 updateSettings client options =
     updateSettings' client options >>= simplifyIO
 
 -- | Alternate version of 'updateSettings' - see note
 -- [here]("Network.JotForm.Api#g:functions").
-updateSettings' :: FromJSON a => ApiClient -> Options -> IO (Response a)
+updateSettings'
+    :: FromJSON a
+    => ApiClient
+    -> Str.Map Str.Text Str.Text
+    -> IO (Response a)
 updateSettings' client options =
     Core.fetchJson client $
         Core.MkParams
             { Core.path = "/user/settings"
             , Core.query = []
-            , Core.body = Utils.renderQueryText $ optionsToQuery options
+            , Core.body = body
             , Core.headers = [Core.urlEncode]
             , Core.method = Method.methodPost
             }
+  where
+    body = Utils.renderQueryText $ optionsToQuery $ MkOptions options
 
 -- /user/history
 
@@ -783,7 +789,7 @@ getFormSubmissions' client (MkID formID) options =
     path = "/form/" <> formID <> "/submissions"
 
 -- | Submit data to this form using the API. Returns posted submission ID
--- and URL.
+-- and URL. Pass submission data as a Map from with question IDs.
 --
 -- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
 -- form IDs when you call 'getFormsByID' or 'getForms'.
@@ -791,8 +797,7 @@ createFormSubmission
     :: FromJSON a
     => ApiClient
     -> ID Form
-    -> Options
-    -- ^ Submission data with question IDs.
+    -> Str.Map (ID Question) Str.Text
     -> IO a
 createFormSubmission client formID submission =
     createFormSubmission' client formID submission >>= simplifyIO
@@ -800,7 +805,11 @@ createFormSubmission client formID submission =
 -- | Alternate version of 'createFormSubmission' - see note
 -- [here]("Network.JotForm.Api#g:functions").
 createFormSubmission'
-    :: FromJSON a => ApiClient -> ID Form -> Options -> IO (Response a)
+    :: FromJSON a
+    => ApiClient
+    -> ID Form
+    -> Str.Map (ID Question) Str.Text
+    -> IO (Response a)
 createFormSubmission' client (MkID formID) submission =
     Core.fetchJson client $
         Core.MkParams
@@ -812,7 +821,7 @@ createFormSubmission' client (MkID formID) submission =
             }
   where
     query = optionsToQuery $ mapKeys submission
-    mapKeys = MkOptions . Map.Str.mapKeys questionName . unOptions
+    mapKeys = MkOptions . Map.Str.mapKeys (questionName . unID)
     path = "/form/" <> formID <> "/submissions"
 
 questionName :: Str.Text -> Str.Text
