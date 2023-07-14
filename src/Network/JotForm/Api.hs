@@ -832,17 +832,12 @@ questionName field = case Utils.elemIndexText '_' field of
     Nothing -> "submission[" <> field <> "]"
 
 -- | Submit data to this form using the API. Returns posted submission ID
--- and URL.
+-- and URL. Submission data is a JSON 'Value' with question IDs.
 --
 -- The 'ID' of a 'Form' is the numbers you see on a form URL. You can get
 -- form IDs when you call 'getFormsByID' or 'getForms'.
 createFormSubmissions
-    :: FromJSON a
-    => ApiClient
-    -> ID Form
-    -> Value
-    -- ^ Submission data with question IDs.
-    -> IO a
+    :: FromJSON a => ApiClient -> ID Form -> Value -> IO a
 createFormSubmissions client formID submissions =
     createFormSubmissions' client formID submissions >>= simplifyIO
 
@@ -896,6 +891,8 @@ getFormWebhooks' client (MkID formID) = basicGet path client
     path = "/form/" <> formID <> "/webhooks"
 
 -- | Add a new webhook. Returns list of webhooks for a specific form.
+-- Pass the webhook URL where form data will be posted when form is
+-- submitted as 'Str.Text'.
 --
 -- The 'ID of a 'Form' is the numbers you see on a form URL. You can get
 -- form IDs when you call 'getFormsByID' or 'getForms'.
