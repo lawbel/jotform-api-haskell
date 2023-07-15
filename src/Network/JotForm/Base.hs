@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Network.JotForm.Utils
+-- |
+-- Module: Network.JotForm.Base
+
+module Network.JotForm.Base
     ( -- * Either
       maybeToEither
     , resultToEither
@@ -12,6 +15,7 @@ module Network.JotForm.Utils
       -- * Text
     , showText
     , elemIndexText
+    , questionName
 
       -- * JSON
     , encodeText
@@ -24,7 +28,8 @@ module Network.JotForm.Utils
     , (&=)
     , renderQueryText
     , renderQueryBytes
-    ) where
+    )
+where
 
 import Data.Aeson (ToJSON)
 import Data.Aeson qualified as Json
@@ -94,3 +99,10 @@ formatDateText locale fmt time =
 
 renderDateJF :: Day -> Str.Text
 renderDateJF = formatDateText Time.defaultTimeLocale "%m/%d/%Y"
+
+questionName :: Str.Text -> Str.Text
+questionName field = case elemIndexText '_' field of
+    Just i ->
+        let (left, right) = Text.Str.splitAt i field
+        in  "submission[" <> left <> "][" <> Text.Str.drop 1 right <> "]"
+    Nothing -> "submission[" <> field <> "]"

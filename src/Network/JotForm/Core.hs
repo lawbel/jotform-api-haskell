@@ -1,5 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+-- |
+-- Module: Network.JotForm.Core
+
 module Network.JotForm.Core
     ( -- * API Client
       ApiClient (..)
@@ -42,7 +45,8 @@ module Network.JotForm.Core
     , userAgent
     , urlEncode
     , acceptJson
-    ) where
+    )
+where
 
 import Control.Exception (Exception, throwIO)
 import Data.Aeson (FromJSON)
@@ -56,7 +60,7 @@ import Network.HTTP.Client qualified as Client
 import Network.HTTP.Client.TLS qualified as Client.TLS
 import Network.HTTP.Types (Header, Method, QueryText)
 import Network.HTTP.Types.Header qualified as Header
-import Network.JotForm.Utils qualified as Utils
+import Network.JotForm.Base qualified as Base
 
 newtype JsonException = MkJsonException Str.Text
     deriving (Eq, Ord, Show, Read)
@@ -166,7 +170,7 @@ fetchJson client params = do
         Right json -> pure (json <$ response)
   where
     request = toRequest client params
-    requestJson = Utils.updateHeaders (acceptJson :) request
+    requestJson = Base.updateHeaders (acceptJson :) request
 
 toRequest :: ApiClient -> Params -> Request
 toRequest client params =
@@ -174,7 +178,7 @@ toRequest client params =
         { Client.host = encode $ baseUrlToString $ baseUrl client
         , Client.path = encode $ versionPath <> path params <> outputPath
         , Client.method = method params
-        , Client.queryString = Utils.renderQueryBytes $ query params
+        , Client.queryString = Base.renderQueryBytes $ query params
         , Client.requestBody = Client.RequestBodyBS $ encode $ body params
         , Client.requestHeaders = headers params <> defHeaders
         }
@@ -183,7 +187,7 @@ toRequest client params =
     versionPath = Text.Str.cons '/' $ apiVersion client
     outputPath = case outputType client of JsonOutput -> Text.Str.empty
     defHeaders =
-        [ (Utils.headerName "ApiKey", encode $ apiKey client)
+        [ (Base.headerName "ApiKey", encode $ apiKey client)
         , userAgent
         ]
 

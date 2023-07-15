@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name: jotform-api-haskell
-version: 0.1.1.0
+version: 0.1.2.0
 synopsis: Haskell bindings to the JotForm API
 license: BSD-3-Clause
 license-file: LICENSE
@@ -11,7 +11,7 @@ build-type: Simple
 -- description:
 
 extra-doc-files:
-      CHANGELOG.md
+    , CHANGELOG.md
     , README.md
 
 common warnings
@@ -19,18 +19,36 @@ common warnings
 
 common language-options
     default-extensions:
-          ImportQualifiedPost
+        , ImportQualifiedPost
         , LambdaCase
 
 library
     import: warnings, language-options
     exposed-modules:
-          Network.JotForm
-        , Network.JotForm.Api
+        , Network.JotForm
         , Network.JotForm.Core
-    other-modules: Network.JotForm.Utils
+        , Network.JotForm.Types
+          -- api
+        , Network.JotForm.Api
+        , Network.JotForm.Api.Folder
+        , Network.JotForm.Api.Form
+        , Network.JotForm.Api.Report
+        , Network.JotForm.Api.Submission
+        , Network.JotForm.Api.System
+        , Network.JotForm.Api.User
+          -- raw api
+        , Network.JotForm.Raw
+        , Network.JotForm.Raw.Folder
+        , Network.JotForm.Raw.Form
+        , Network.JotForm.Raw.Report
+        , Network.JotForm.Raw.Submission
+        , Network.JotForm.Raw.System
+        , Network.JotForm.Raw.User
+    other-modules:
+        , Network.JotForm.Base
+        , Network.JotForm.Extra
     build-depends:
-          base ^>=4.16.4.0
+        , base ^>=4.16.4.0
         , bytestring ^>=0.11.4.0
         , text ^>=1.2.5.0
         , time ^>=1.11.1.1
@@ -51,7 +69,7 @@ test-suite examples
     hs-source-dirs: test
     main-is: Examples.hs
     build-depends:
-          base
+        , base
         , aeson
         , aeson-optics ^>=1.2.0.1
         , aeson-pretty ^>=0.8.9
