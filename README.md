@@ -1,5 +1,10 @@
 # jotform-api-haskell
 
+## Work In Progress
+
+Note that this repo is a work-in-progress port of the JotForm API to haskell.Parts of the interface are currently missing, and the internals are in flux.
+Nonetheless, all the below examples are currently working.
+
 ## Examples
 
 Print all forms of the user:
